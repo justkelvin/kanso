@@ -19,25 +19,41 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "kanso",
 	Short: "Kanso: Minimal Arch Linux & Hyprland manager",
+	Long: `Kanso is a minimal, keyboard-driven Arch Linux & Hyprland setup manager.
+It provides system diagnostics, automated configuration deployment, and health checks.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println(titleStyle.Render("Kanso Hyprland Setup"))
+		fmt.Println(titleStyle.Render("Kanso — Minimal Arch Linux & Hyprland"))
 
-		var confirm bool
-		err := huh.NewConfirm().
-			Title("Welcome to Kanso. Ready to configure your system?").
-			Value(&confirm).
-			Run()
+		var selectedAction string
+		form := huh.NewForm(
+			huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("What would you like to do?").
+					Options(
+						huh.NewOption("Run System Diagnostics (doctor)", "doctor"),
+						huh.NewOption("Check System Status (status)", "status"),
+						huh.NewOption("Show Version Info (version)", "version"),
+						huh.NewOption("Exit", "exit"),
+					).
+					Value(&selectedAction),
+			),
+		)
 
-		if err != nil {
+		if err := form.Run(); err != nil {
 			return err
 		}
 
-		if !confirm {
-			fmt.Println("Setup aborted.")
-			return nil
+		switch selectedAction {
+		case "doctor":
+			doctorCmd.Run(cmd, []string{})
+		case "status":
+			statusCmd.Run(cmd, []string{})
+		case "version":
+			versionCmd.Run(cmd, []string{})
+		case "exit":
+			fmt.Println("Goodbye.")
 		}
 
-		fmt.Println("Proceeding with setup...")
 		return nil
 	},
 }
