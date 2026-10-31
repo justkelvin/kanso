@@ -1,0 +1,59 @@
+# Selected desktop packages from Arch's official repositories.
+# One package per line; comments are documentation, not shell commands.
+# This is a desktop dependency list, not an operating-system installer.
+
+# Shell and file application.
+bash
+bash-completion
+rsync
+
+# Login/session and desktop integration.
+hyprland
+hyprpolkitagent
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+
+# Selected applications and desktop surfaces.
+kitty
+rofi
+waybar
+mako
+zed
+dolphin
+
+# Audio, microphone, media keys
+pipewire
+pipewire-audio
+pipewire-pulse
+pipewire-alsa
+wireplumber
+pavucontrol
+playerctl
+
+# Backlight, screenshots, clipboard history, lock, idle, and wallpaper.
+brightnessctl
+grim
+slurp
+wl-clipboard
+cliphist
+hyprlock
+hypridle
+hyprpaper
+
+# Network/Bluetooth tray applets and their services.
+network-manager-applet
+bluez
+bluez-utils
+blueman
+
+# Required GTK/Qt appearance integration.
+qt5-wayland
+qt6-wayland
+nwg-look
+adwaita-icon-theme
+
+# Fonts
+cantarell-fonts
+noto-fonts
+noto-fonts-emoji
+ttf-jetbrains-mono-nerd

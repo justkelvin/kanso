@@ -1,0 +1,3 @@
+# Tools for maintaining this repository and building the Go CLI locally.
+git
+go

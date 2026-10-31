@@ -1,0 +1,4 @@
+# Selected AUR packages. yay is the chosen, already installed helper.
+# This file does not bootstrap yay or install/update anything automatically.
+google-chrome
+yay
