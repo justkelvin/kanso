@@ -1,0 +1,94 @@
+/**
+ * Kanso Minimal Rofi Theme
+ * Tokyo Night aesthetic with clean centered launcher
+ */
+
+configuration {
+    modi: "drun,run";
+    font: "JetBrainsMono Nerd Font 11";
+    show-icons: true;
+    icon-theme: "Adwaita";
+    display-drun: "󰍉 ";
+    display-run: " ";
+    drun-display-format: "{name}";
+    disable-history: false;
+}
+
+@theme "/dev/null"
+
+* {
+    bg: #1a1b26f5;
+    bg-alt: #24283b;
+    fg: #c0caf5;
+    fg-alt: #565f89;
+    accent: #7aa2f7;
+    urgent: #f7768e;
+
+    background-color: transparent;
+    text-color: @fg;
+    margin: 0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    location: center;
+    width: 520px;
+    border-radius: 12px;
+    border: 2px solid @accent;
+    background-color: @bg;
+    padding: 16px;
+}
+
+inputbar {
+    spacing: 8px;
+    padding: 8px 12px;
+    background-color: @bg-alt;
+    border-radius: 8px;
+    children: [ prompt, entry ];
+}
+
+prompt {
+    text-color: @accent;
+    font: "JetBrainsMono Nerd Font Bold 12";
+}
+
+entry {
+    placeholder: "Search applications...";
+    placeholder-color: @fg-alt;
+    text-color: @fg;
+}
+
+listview {
+    lines: 7;
+    columns: 1;
+    fixed-height: true;
+    spacing: 4px;
+    margin: 12px 0 0 0;
+}
+
+element {
+    padding: 8px 12px;
+    border-radius: 8px;
+    spacing: 12px;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color: @fg;
+}
+
+element selected.normal {
+    background-color: @bg-alt;
+    text-color: @accent;
+    border: 1px solid @accent;
+}
+
+element-icon {
+    size: 20px;
+}
+
+element-text {
+    vertical-align: 0.5;
+    text-color: inherit;
+}

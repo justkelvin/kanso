@@ -1,0 +1,30 @@
+# Kanso Minimal Mako Notification Configuration
+
+font=JetBrainsMono Nerd Font 10
+width=320
+height=120
+margin=14
+padding=12
+border-size=2
+border-radius=8
+
+background-color=#1a1b26f5
+text-color=#c0caf5
+border-color=#7aa2f7
+progress-color=over #7aa2f7
+
+default-timeout=5000
+ignore-timeout=0
+group-by=summary
+
+[urgency=low]
+border-color=#565f89
+default-timeout=3000
+
+[urgency=normal]
+border-color=#7aa2f7
+default-timeout=5000
+
+[urgency=critical]
+border-color=#f7768e
+default-timeout=0
