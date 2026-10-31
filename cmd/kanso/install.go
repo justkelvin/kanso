@@ -105,10 +105,14 @@ func runInstaller(dryRun bool) error {
 		}
 	}
 
+	home, _ := os.UserHomeDir()
+	sessionBackupDir := filepath.Join(home, ".config", "kanso", "backups", time.Now().Format("2006-01-02_150405"))
+	backedUpCount := 0
+
 	// Step 2: Dotfiles
 	if stepMap["dotfiles"] {
 		fmt.Println(sectionStyle.Render("Step 2: Deploying Desktop Configurations"))
-		if err := deployAllConfigs(repoRoot, dryRun); err != nil {
+		if err := deployAllConfigs(repoRoot, sessionBackupDir, &backedUpCount, dryRun); err != nil {
 			return fmt.Errorf("dotfile deployment failed: %w", err)
 		}
 	}
@@ -116,7 +120,7 @@ func runInstaller(dryRun bool) error {
 	// Step 3: Bash / TTY1 autostart
 	if stepMap["bash"] {
 		fmt.Println(sectionStyle.Render("Step 3: Configuring Shell & TTY Autostart"))
-		if err := deployBashConfigs(repoRoot, dryRun); err != nil {
+		if err := deployBashConfigs(repoRoot, sessionBackupDir, &backedUpCount, dryRun); err != nil {
 			return fmt.Errorf("shell configuration failed: %w", err)
 		}
 	}
@@ -132,6 +136,14 @@ func runInstaller(dryRun bool) error {
 	// Finish summary
 	fmt.Println()
 	fmt.Println(successStyle.Render("✔ Kanso setup completed successfully!"))
+	if backedUpCount > 0 {
+		relBackup, _ := filepath.Rel(home, sessionBackupDir)
+		fmt.Printf("  %s Preserved %d existing configuration file(s) in:\n    %s\n",
+			warnStyle.Render("↺"),
+			backedUpCount,
+			successStyle.Render("~/"+relBackup+"/"),
+		)
+	}
 
 	// Offer to start Hyprland if in TTY
 	if !dryRun && os.Getenv("WAYLAND_DISPLAY") == "" && os.Getenv("DISPLAY") == "" {
@@ -236,8 +248,8 @@ func installArchPackages(repoRoot string, dryRun bool) error {
 	return cmd.Run()
 }
 
-// Deploy desktop configs with safe native Go copying and automatic backups
-func deployAllConfigs(repoRoot string, dryRun bool) error {
+// Deploy desktop configs with safe native Go copying and automatic centralized backups
+func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun bool) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -258,7 +270,7 @@ func deployAllConfigs(repoRoot string, dryRun bool) error {
 	}
 
 	for _, target := range targets {
-		if err := copyDirectoryWithBackup(target.src, target.dst, dryRun); err != nil {
+		if err := copyDirectoryWithBackup(target.src, target.dst, backupDir, backedUpCount, dryRun); err != nil {
 			return err
 		}
 	}
@@ -267,7 +279,7 @@ func deployAllConfigs(repoRoot string, dryRun bool) error {
 	srcWallpaper := filepath.Join(repoRoot, "assets", "wallpaper.png")
 	if _, err := os.Stat(srcWallpaper); err == nil {
 		dstWallpaper := filepath.Join(configDir, "hypr", "wallpaper.png")
-		if err := safeCopyFile(srcWallpaper, dstWallpaper, dryRun); err != nil {
+		if err := safeCopyFile(srcWallpaper, dstWallpaper, backupDir, backedUpCount, dryRun); err != nil {
 			return err
 		}
 	}
@@ -276,7 +288,7 @@ func deployAllConfigs(repoRoot string, dryRun bool) error {
 }
 
 // Deploy .bashrc and .bash_profile to user's home directory
-func deployBashConfigs(repoRoot string, dryRun bool) error {
+func deployBashConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun bool) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -291,7 +303,7 @@ func deployBashConfigs(repoRoot string, dryRun bool) error {
 	}
 
 	for _, b := range bashConfigs {
-		if err := safeCopyFile(b.src, b.dst, dryRun); err != nil {
+		if err := safeCopyFile(b.src, b.dst, backupDir, backedUpCount, dryRun); err != nil {
 			return err
 		}
 	}
@@ -299,8 +311,8 @@ func deployBashConfigs(repoRoot string, dryRun bool) error {
 	return nil
 }
 
-// Recursively copies a directory, creating backups for any existing files that differ
-func copyDirectoryWithBackup(srcDir, dstDir string, dryRun bool) error {
+// Recursively copies a directory, creating backups in the backup hierarchy for existing files that differ
+func copyDirectoryWithBackup(srcDir, dstDir, backupDir string, backedUpCount *int, dryRun bool) error {
 	if _, err := os.Stat(srcDir); os.IsNotExist(err) {
 		return nil
 	}
@@ -324,12 +336,14 @@ func copyDirectoryWithBackup(srcDir, dstDir string, dryRun bool) error {
 			return nil
 		}
 
-		return safeCopyFile(srcPath, dstPath, dryRun)
+		return safeCopyFile(srcPath, dstPath, backupDir, backedUpCount, dryRun)
 	})
 }
 
-// Copy a single file safely. Backs up if destination already exists with different content.
-func safeCopyFile(src, dst string, dryRun bool) error {
+// Copy a single file safely. Backs up to centralized backup directory if destination exists with different content.
+func safeCopyFile(src, dst, backupDir string, backedUpCount *int, dryRun bool) error {
+	home, _ := os.UserHomeDir()
+
 	srcInfo, err := os.Stat(src)
 	if err != nil {
 		return err
@@ -344,18 +358,35 @@ func safeCopyFile(src, dst string, dryRun bool) error {
 			return nil
 		}
 
-		// Destination is different, create a backup
-		backupPath := fmt.Sprintf("%s.bak.%s", dst, time.Now().Format("20060102-150405"))
+		// Destination has different content, preserve in centralized backup directory preserving hierarchy
+		relToHome, err := filepath.Rel(home, dst)
+		var backupDst string
+		if err == nil && !strings.HasPrefix(relToHome, "..") {
+			backupDst = filepath.Join(backupDir, relToHome)
+		} else {
+			backupDst = filepath.Join(backupDir, filepath.Base(dst))
+		}
+
+		displayRel := relToHome
+		if displayRel == "" {
+			displayRel = filepath.Base(dst)
+		}
+
+		*backedUpCount++
 		if dryRun {
-			fmt.Printf("  %s Would backup %s -> %s\n", warnStyle.Render("!"), filepath.Base(dst), filepath.Base(backupPath))
+			fmt.Printf("  %s Would backup %s -> %s\n", warnStyle.Render("!"), filepath.Base(dst), dimStyle.Render("~/.config/kanso/backups/.../"+displayRel))
 			fmt.Printf("  %s Would update %s\n", successStyle.Render("✔"), dst)
 			return nil
 		}
 
-		if err := copyRawFile(dst, backupPath, dstInfo.Mode()); err != nil {
+		if err := os.MkdirAll(filepath.Dir(backupDst), 0755); err != nil {
+			return fmt.Errorf("failed creating backup directory structure: %w", err)
+		}
+
+		if err := copyRawFile(dst, backupDst, dstInfo.Mode()); err != nil {
 			return fmt.Errorf("failed creating backup of %s: %w", dst, err)
 		}
-		fmt.Printf("  %s Backed up %s -> %s\n", warnStyle.Render("↺"), filepath.Base(dst), dimStyle.Render(filepath.Base(backupPath)))
+		fmt.Printf("  %s Backed up %s -> %s\n", warnStyle.Render("↺"), filepath.Base(dst), dimStyle.Render("~/.config/kanso/backups/.../"+displayRel))
 	}
 
 	if dryRun {
