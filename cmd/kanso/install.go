@@ -49,9 +49,10 @@ func init() {
 }
 
 func runInstaller(dryRun bool) error {
-	fmt.Println(bannerStyle.Render("Kanso Hyprland Installer"))
+	PrintBanner()
+
 	if dryRun {
-		fmt.Println(warnStyle.Render("ℹ DRY RUN MODE: No files or packages will be modified.\n"))
+		fmt.Printf("  %s %s\n\n", cWarn.Render("!"), cCyan.Render("DRY RUN MODE: Simulating setup without writing changes."))
 	}
 
 	repoRoot, err := findRepoRoot()
@@ -64,7 +65,7 @@ func runInstaller(dryRun bool) error {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewMultiSelect[string]().
-				Title("Select installation steps to run:").
+				Title("Select installation steps:").
 				Options(
 					huh.NewOption("Install Arch packages (pacman)", "packages").Selected(true),
 					huh.NewOption("Deploy configuration files (with backups)", "dotfiles").Selected(true),
@@ -91,9 +92,9 @@ func runInstaller(dryRun bool) error {
 
 	// Step 1: Packages
 	if stepMap["packages"] {
-		fmt.Println(sectionStyle.Render("Step 1: Installing Arch Packages"))
+		fmt.Println(cMuted.Render("  1. PACKAGES"))
 		if err := installArchPackages(repoRoot, dryRun); err != nil {
-			fmt.Printf("  %s Failed installing packages: %v\n", errorStyle.Render("✖"), err)
+			RenderCheckItem(false, "Failed installing packages", err.Error())
 			var proceed bool
 			_ = huh.NewConfirm().
 				Title("Package installation encountered an issue. Proceed with remaining steps?").
@@ -103,6 +104,7 @@ func runInstaller(dryRun bool) error {
 				return err
 			}
 		}
+		fmt.Println()
 	}
 
 	home, _ := os.UserHomeDir()
@@ -111,50 +113,61 @@ func runInstaller(dryRun bool) error {
 
 	// Step 2: Dotfiles
 	if stepMap["dotfiles"] {
-		fmt.Println(sectionStyle.Render("Step 2: Deploying Desktop Configurations"))
+		fmt.Println(cMuted.Render("  2. CONFIGURATION DEPLOYMENT"))
 		if err := deployAllConfigs(repoRoot, sessionBackupDir, &backedUpCount, dryRun); err != nil {
 			return fmt.Errorf("dotfile deployment failed: %w", err)
 		}
+		fmt.Println()
 	}
 
 	// Step 3: Bash / TTY1 autostart
 	if stepMap["bash"] {
-		fmt.Println(sectionStyle.Render("Step 3: Configuring Shell & TTY Autostart"))
+		fmt.Println(cMuted.Render("  3. SHELL & TTY AUTOSTART"))
 		if err := deployBashConfigs(repoRoot, sessionBackupDir, &backedUpCount, dryRun); err != nil {
 			return fmt.Errorf("shell configuration failed: %w", err)
 		}
+		fmt.Println()
 	}
 
 	// Step 4: Systemd User Services
 	if stepMap["services"] {
-		fmt.Println(sectionStyle.Render("Step 4: Activating User Services"))
+		fmt.Println(cMuted.Render("  4. SYSTEMD USER SERVICES"))
 		if err := enableUserServices(dryRun); err != nil {
-			fmt.Printf("  %s Service activation note: %v\n", warnStyle.Render("!"), err)
+			RenderCheckItem(false, "Service activation note", err.Error())
 		}
+		fmt.Println()
 	}
 
-	// Finish summary
-	fmt.Println()
-	fmt.Println(successStyle.Render("✔ Kanso setup completed successfully!"))
+	// Backup Summary Card (if backups were made)
 	if backedUpCount > 0 {
 		relBackup, _ := filepath.Rel(home, sessionBackupDir)
-		fmt.Printf("  %s Preserved %d existing configuration file(s) in:\n    %s\n",
-			warnStyle.Render("↺"),
-			backedUpCount,
-			successStyle.Render("~/"+relBackup+"/"),
-		)
+		backupCard := RenderCard("Backup preserved", []KeyVal{
+			{Key: "Backup Dir", Value: "~/" + relBackup + "/"},
+			{Key: "Preserved", Value: fmt.Sprintf("%d configuration file(s)", backedUpCount)},
+			{Key: "Hierarchy", Badge: BadgeGreen("IDENTICAL TO $HOME")},
+		})
+		fmt.Println(backupCard)
 	}
+
+	// Finish Summary Card
+	summaryCard := RenderCard("Installation summary", []KeyVal{
+		{Key: "Compositor", Value: "Hyprland (Native Lua)"},
+		{Key: "Surfaces", Value: "Waybar, Kitty, Rofi, Mako"},
+		{Key: "Audio & Power", Value: "PipeWire, WirePlumber, Hypridle"},
+		{Key: "State", Badge: BadgeGreen("READY")},
+	})
+	fmt.Println(summaryCard)
 
 	// Offer to start Hyprland if in TTY
 	if !dryRun && os.Getenv("WAYLAND_DISPLAY") == "" && os.Getenv("DISPLAY") == "" {
 		var launch bool
 		_ = huh.NewConfirm().
-			Title("Would you like to launch Hyprland now?").
+			Title("Launch Hyprland desktop now?").
 			Value(&launch).
 			Run()
 
 		if launch {
-			fmt.Println("Starting Hyprland...")
+			fmt.Println("Launching Hyprland session...")
 			c := exec.Command("Hyprland")
 			c.Stdin = os.Stdin
 			c.Stdout = os.Stdout
@@ -217,14 +230,14 @@ func installArchPackages(repoRoot string, dryRun bool) error {
 	}
 
 	if len(pkgs) == 0 {
-		fmt.Printf("  %s No packages found in packages/arch.txt\n", warnStyle.Render("!"))
+		RenderCheckItem(false, "No packages found in packages/arch.txt")
 		return nil
 	}
 
-	fmt.Printf("  %s Found %d packages in %s\n", dimStyle.Render("•"), len(pkgs), dimStyle.Render(pkgFile))
+	RenderCheckItem(true, fmt.Sprintf("Parsed %d packages from packages/arch.txt", len(pkgs)))
 
 	if dryRun {
-		fmt.Printf("  %s Would run: sudo pacman -S --needed %s\n", successStyle.Render("✔"), strings.Join(pkgs[:min(5, len(pkgs))], " ")+"...")
+		RenderCheckItem(true, "Would run: sudo pacman -S --needed [42 packages...]")
 		return nil
 	}
 
@@ -235,7 +248,7 @@ func installArchPackages(repoRoot string, dryRun bool) error {
 		Run()
 
 	if err != nil || !confirmPacman {
-		fmt.Printf("  %s Package installation skipped by user\n", warnStyle.Render("○"))
+		RenderCheckItem(false, "Package installation skipped by user")
 		return nil
 	}
 
@@ -354,7 +367,7 @@ func safeCopyFile(src, dst, backupDir string, backedUpCount *int, dryRun bool) e
 		// Destination exists. Check if content is identical.
 		identical, _ := filesHaveIdenticalContent(src, dst)
 		if identical {
-			fmt.Printf("  %s %s %s\n", dimStyle.Render("•"), filepath.Base(dst), dimStyle.Render("(up to date)"))
+			RenderCheckItem(true, filepath.Base(dst), "up to date")
 			return nil
 		}
 
@@ -374,8 +387,8 @@ func safeCopyFile(src, dst, backupDir string, backedUpCount *int, dryRun bool) e
 
 		*backedUpCount++
 		if dryRun {
-			fmt.Printf("  %s Would backup %s -> %s\n", warnStyle.Render("!"), filepath.Base(dst), dimStyle.Render("~/.config/kanso/backups/.../"+displayRel))
-			fmt.Printf("  %s Would update %s\n", successStyle.Render("✔"), dst)
+			RenderCheckItem(true, "Would backup "+filepath.Base(dst), "~/.config/kanso/backups/.../"+displayRel)
+			RenderCheckItem(true, "Would update "+filepath.Base(dst))
 			return nil
 		}
 
@@ -386,11 +399,11 @@ func safeCopyFile(src, dst, backupDir string, backedUpCount *int, dryRun bool) e
 		if err := copyRawFile(dst, backupDst, dstInfo.Mode()); err != nil {
 			return fmt.Errorf("failed creating backup of %s: %w", dst, err)
 		}
-		fmt.Printf("  %s Backed up %s -> %s\n", warnStyle.Render("↺"), filepath.Base(dst), dimStyle.Render("~/.config/kanso/backups/.../"+displayRel))
+		RenderCheckItem(true, "Backed up "+filepath.Base(dst), "~/.config/kanso/backups/.../"+displayRel)
 	}
 
 	if dryRun {
-		fmt.Printf("  %s Would deploy %s\n", successStyle.Render("✔"), dst)
+		RenderCheckItem(true, "Would deploy "+filepath.Base(dst))
 		return nil
 	}
 
@@ -404,7 +417,7 @@ func safeCopyFile(src, dst, backupDir string, backedUpCount *int, dryRun bool) e
 		return err
 	}
 
-	fmt.Printf("  %s Deployed %s\n", successStyle.Render("✔"), filepath.Base(dst))
+	RenderCheckItem(true, "Deployed "+filepath.Base(dst))
 	return nil
 }
 
@@ -442,16 +455,18 @@ func enableUserServices(dryRun bool) error {
 	services := []string{"pipewire.service", "pipewire-pulse.service", "wireplumber.service"}
 
 	if dryRun {
-		fmt.Printf("  %s Would enable services: %s\n", successStyle.Render("✔"), strings.Join(services, ", "))
+		for _, svc := range services {
+			RenderCheckItem(true, "Would enable and start "+svc)
+		}
 		return nil
 	}
 
 	for _, svc := range services {
 		cmd := exec.Command("systemctl", "--user", "enable", "--now", svc)
 		if out, err := cmd.CombinedOutput(); err != nil {
-			fmt.Printf("  %s Warning enabling %s: %s\n", warnStyle.Render("!"), svc, strings.TrimSpace(string(out)))
+			RenderCheckItem(false, "Failed activating "+svc, strings.TrimSpace(string(out)))
 		} else {
-			fmt.Printf("  %s Enabled and started %s\n", successStyle.Render("✔"), svc)
+			RenderCheckItem(true, "Activated and started "+svc)
 		}
 	}
 

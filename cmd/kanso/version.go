@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
@@ -18,14 +17,17 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print Kanso version and build details",
 	Run: func(cmd *cobra.Command, args []string) {
-		title := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#7aa2f7")).Render("Kanso")
-		v := lipgloss.NewStyle().Foreground(lipgloss.Color("#9ece6a")).Render("v" + version)
-		dim := lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89"))
+		PrintBanner()
 
-		fmt.Printf("%s %s\n", title, v)
-		fmt.Printf("  %s %s\n", dim.Render("commit:"), commit)
-		fmt.Printf("  %s %s\n", dim.Render("built: "), date)
-		fmt.Printf("  %s %s (%s/%s)\n", dim.Render("runtime:"), runtime.Version(), runtime.GOOS, runtime.GOARCH)
+		card := RenderCard("Build Info", []KeyVal{
+			{Key: "Version", Value: "v" + version, Badge: BadgeGreen("v" + version)},
+			{Key: "Commit", Value: commit},
+			{Key: "Built", Value: date},
+			{Key: "Runtime", Value: fmt.Sprintf("%s (%s/%s)", runtime.Version(), runtime.GOOS, runtime.GOARCH)},
+			{Key: "Platform", Value: "Arch Linux / Wayland"},
+		})
+
+		fmt.Println(card)
 	},
 }
 

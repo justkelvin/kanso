@@ -14,7 +14,7 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show deployment status of configs, services, and session",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(titleStyle.Render("Kanso Status Overview"))
+		PrintBanner()
 
 		home, err := os.UserHomeDir()
 		if err != nil {
@@ -22,14 +22,13 @@ var statusCmd = &cobra.Command{
 			return
 		}
 
-		// 1. Session Environment
-		fmt.Println(sectionStyle.Render("Session Environment"))
+		// 1. Session Info Card
 		sessionType := os.Getenv("XDG_SESSION_TYPE")
 		currentDesktop := os.Getenv("XDG_CURRENT_DESKTOP")
 		waylandDisplay := os.Getenv("WAYLAND_DISPLAY")
 
 		if sessionType == "" {
-			sessionType = "none (TTY or console)"
+			sessionType = "tty"
 		}
 		if currentDesktop == "" {
 			currentDesktop = "none"
@@ -38,12 +37,20 @@ var statusCmd = &cobra.Command{
 			waylandDisplay = "none"
 		}
 
-		fmt.Printf("  %s %-20s %s\n", dimStyle.Render("•"), "Session Type:", sessionType)
-		fmt.Printf("  %s %-20s %s\n", dimStyle.Render("•"), "Current Desktop:", currentDesktop)
-		fmt.Printf("  %s %-20s %s\n", dimStyle.Render("•"), "Wayland Display:", waylandDisplay)
+		sessionBadge := BadgeGreen("RUNNING")
+		if waylandDisplay == "none" {
+			sessionBadge = BadgeYellow("TTY (IDLE)")
+		}
 
-		// 2. Configuration Files
-		fmt.Println(sectionStyle.Render("Configuration Files"))
+		sessionCard := RenderCard("Session info", []KeyVal{
+			{Key: "Desktop", Value: currentDesktop},
+			{Key: "Session Type", Value: sessionType},
+			{Key: "Wayland Display", Value: waylandDisplay},
+			{Key: "State", Badge: sessionBadge},
+		})
+		fmt.Println(sessionCard)
+
+		// 2. Configuration Files Card
 		configs := []struct {
 			name string
 			path string
@@ -59,36 +66,51 @@ var statusCmd = &cobra.Command{
 		}
 
 		deployedCount := 0
+		var configRows []KeyVal
 		for _, cfg := range configs {
 			if _, err := os.Stat(cfg.path); err == nil {
-				fmt.Printf("  %s %-20s %s\n", successStyle.Render("✔"), cfg.name, dimStyle.Render(cfg.path))
+				configRows = append(configRows, KeyVal{
+					Key:   cfg.name,
+					Value: cfg.path,
+					Badge: BadgeGreen("DEPLOYED"),
+				})
 				deployedCount++
 			} else {
-				fmt.Printf("  %s %-20s %s\n", warnStyle.Render("○"), cfg.name, dimStyle.Render("Not installed"))
+				configRows = append(configRows, KeyVal{
+					Key:   cfg.name,
+					Value: "missing",
+					Badge: BadgeMuted("NOT INSTALLED"),
+				})
 			}
 		}
 
-		// 3. User Services
-		fmt.Println(sectionStyle.Render("User Services"))
+		configCard := RenderCard(fmt.Sprintf("Configurations (%d/%d)", deployedCount, len(configs)), configRows)
+		fmt.Println(configCard)
+
+		// 3. User Services Card
 		services := []string{"pipewire.service", "wireplumber.service", "hyprpolkitagent.service"}
+		var serviceRows []KeyVal
 		for _, svc := range services {
 			out, err := exec.Command("systemctl", "--user", "is-active", svc).Output()
 			statusStr := strings.TrimSpace(string(out))
 			if err == nil && statusStr == "active" {
-				fmt.Printf("  %s %-25s %s\n", successStyle.Render("✔"), svc, successStyle.Render("active"))
+				serviceRows = append(serviceRows, KeyVal{
+					Key:   svc,
+					Badge: BadgeGreen("ACTIVE"),
+				})
 			} else {
-				if statusStr == "" {
-					statusStr = "inactive"
-				}
-				fmt.Printf("  %s %-25s %s\n", dimStyle.Render("•"), svc, dimStyle.Render(statusStr))
+				serviceRows = append(serviceRows, KeyVal{
+					Key:   svc,
+					Badge: BadgeMuted("INACTIVE"),
+				})
 			}
 		}
 
-		// Summary
-		fmt.Println()
-		fmt.Printf("Configurations deployed: %d/%d\n", deployedCount, len(configs))
+		serviceCard := RenderCard("User services", serviceRows)
+		fmt.Println(serviceCard)
+
 		if deployedCount < len(configs) {
-			fmt.Printf("Run %s to deploy missing configurations.\n", successStyle.Render("kanso install"))
+			fmt.Printf("Run %s to deploy missing configurations.\n\n", BadgeGreen("kanso install"))
 		}
 	},
 }

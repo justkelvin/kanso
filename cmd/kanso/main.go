@@ -5,15 +5,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
-)
-
-var (
-	titleStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("#7aa2f7")).
-			MarginBottom(1)
 )
 
 var rootCmd = &cobra.Command{
@@ -22,18 +14,18 @@ var rootCmd = &cobra.Command{
 	Long: `Kanso is a minimal, keyboard-driven Arch Linux & Hyprland setup manager.
 It provides an interactive installer, system diagnostics, and configuration management.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println(titleStyle.Render("Kanso — Minimal Arch Linux & Hyprland"))
+		PrintBanner()
 
 		var selectedAction string
 		form := huh.NewForm(
 			huh.NewGroup(
 				huh.NewSelect[string]().
-					Title("What would you like to do?").
+					Title("Choose an operation:").
 					Options(
 						huh.NewOption("Install & Configure System (install)", "install"),
-						huh.NewOption("Run System Diagnostics (doctor)", "doctor"),
-						huh.NewOption("Check System Status (status)", "status"),
-						huh.NewOption("Show Version Info (version)", "version"),
+						huh.NewOption("Run Diagnostics (doctor)", "doctor"),
+						huh.NewOption("System Overview (status)", "status"),
+						huh.NewOption("Version Information (version)", "version"),
 						huh.NewOption("Exit", "exit"),
 					).
 					Value(&selectedAction),

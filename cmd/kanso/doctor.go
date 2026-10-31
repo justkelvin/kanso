@@ -6,40 +6,31 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
-	"path/filepath"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
-)
-
-var (
-	successStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#9ece6a")).Bold(true)
-	warnStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#e0af68")).Bold(true)
-	errorStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#f7768e")).Bold(true)
-	sectionStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7aa2f7")).Bold(true).MarginTop(1)
-	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89"))
 )
 
 var doctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "Run diagnostics on system dependencies and Wayland readiness",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(titleStyle.Render("Kanso Doctor — System Diagnostics"))
+		PrintBanner()
 
 		issues := 0
 
 		// 1. Operating System
-		fmt.Println(sectionStyle.Render("Operating System"))
+		fmt.Println(cMuted.Render("  OPERATING SYSTEM"))
 		if isArchLinux() {
-			fmt.Printf("  %s Base distribution is Arch Linux\n", successStyle.Render("✔"))
+			RenderCheckItem(true, "Base distribution is Arch Linux")
 		} else {
-			fmt.Printf("  %s Non-Arch Linux system detected. Kanso is optimized for Arch.\n", warnStyle.Render("!"))
+			RenderCheckItem(false, "Non-Arch Linux system detected", "Kanso is optimized for Arch")
 			issues++
 		}
+		fmt.Println()
 
 		// 2. Core Desktop Tools
-		fmt.Println(sectionStyle.Render("Core Desktop Tools"))
+		fmt.Println(cMuted.Render("  DESKTOP BINARIES"))
 		essentialBinaries := []struct {
 			name        string
 			description string
@@ -64,32 +55,38 @@ var doctorCmd = &cobra.Command{
 
 		for _, bin := range essentialBinaries {
 			if path, err := exec.LookPath(bin.name); err == nil {
-				fmt.Printf("  %s %-15s %s\n", successStyle.Render("✔"), bin.name, dimStyle.Render("("+path+")"))
+				RenderCheckItem(true, fmt.Sprintf("%-16s %s", bin.name, cMuted.Render(path)))
 			} else {
-				fmt.Printf("  %s %-15s %s (missing: %s)\n", errorStyle.Render("✖"), bin.name, dimStyle.Render(bin.description), bin.name)
+				RenderCheckItem(false, fmt.Sprintf("%-16s %s", bin.name, cMuted.Render("missing: "+bin.description)))
 				issues++
 			}
 		}
+		fmt.Println()
 
 		// 3. Portals and Polkit
-		fmt.Println(sectionStyle.Render("Session Integration"))
+		fmt.Println(cMuted.Render("  SESSION INTEGRATION"))
 		checkPortalAndPolkit(&issues)
+		fmt.Println()
 
 		// 4. User Group Permissions
-		fmt.Println(sectionStyle.Render("User Groups"))
+		fmt.Println(cMuted.Render("  USER GROUPS"))
 		checkUserGroups(&issues)
-
-		// 5. Desktop Configurations
-		fmt.Println(sectionStyle.Render("Configuration Files"))
-		checkConfigs(&issues)
-
-		// Summary
 		fmt.Println()
-		if issues == 0 {
-			fmt.Printf("%s All diagnostic checks passed! System is ready for Hyprland.\n", successStyle.Render("✔"))
-		} else {
-			fmt.Printf("%s Doctor found %d issue(s) or missing package(s). Run 'kanso' to configure.\n", warnStyle.Render("!"), issues)
+
+		// Summary Card
+		stateBadge := BadgeGreen("PASSED")
+		stateDesc := "System is ready for Hyprland"
+		if issues > 0 {
+			stateBadge = BadgeYellow(fmt.Sprintf("%d WARNING(S)", issues))
+			stateDesc = "Run 'kanso install' to resolve dependencies"
 		}
+
+		summaryCard := RenderCard("Diagnostic Summary", []KeyVal{
+			{Key: "Health Status", Badge: stateBadge},
+			{Key: "Action", Value: stateDesc},
+			{Key: "Compositor", Value: "Hyprland (Native Lua)"},
+		})
+		fmt.Println(summaryCard)
 	},
 }
 
@@ -114,21 +111,19 @@ func isArchLinux() bool {
 }
 
 func checkPortalAndPolkit(issues *int) {
-	// Check hyprpolkitagent
 	if _, err := exec.LookPath("hyprpolkitagent"); err == nil {
-		fmt.Printf("  %s %-25s %s\n", successStyle.Render("✔"), "hyprpolkitagent", dimStyle.Render("Polkit authentication agent found"))
+		RenderCheckItem(true, "hyprpolkitagent", "polkit authentication agent")
 	} else if _, err := os.Stat("/usr/lib/hyprpolkitagent/hyprpolkitagent"); err == nil {
-		fmt.Printf("  %s %-25s %s\n", successStyle.Render("✔"), "hyprpolkitagent", dimStyle.Render("Found at /usr/lib/hyprpolkitagent"))
+		RenderCheckItem(true, "hyprpolkitagent", "found at /usr/lib/hyprpolkitagent")
 	} else {
-		fmt.Printf("  %s %-25s %s\n", warnStyle.Render("!"), "hyprpolkitagent", dimStyle.Render("Missing official polkit agent"))
+		RenderCheckItem(false, "hyprpolkitagent", "missing official polkit agent")
 		*issues++
 	}
 
-	// Check xdg-desktop-portal-hyprland
 	if _, err := os.Stat("/usr/lib/xdg-desktop-portal-hyprland"); err == nil {
-		fmt.Printf("  %s %-25s %s\n", successStyle.Render("✔"), "xdg-desktop-portal-hyprland", dimStyle.Render("Found portal backend"))
+		RenderCheckItem(true, "xdg-desktop-portal-hyprland", "wayland portal backend")
 	} else {
-		fmt.Printf("  %s %-25s %s\n", warnStyle.Render("!"), "xdg-desktop-portal-hyprland", dimStyle.Render("Missing portal backend"))
+		RenderCheckItem(false, "xdg-desktop-portal-hyprland", "missing portal backend")
 		*issues++
 	}
 }
@@ -136,13 +131,13 @@ func checkPortalAndPolkit(issues *int) {
 func checkUserGroups(issues *int) {
 	u, err := user.Current()
 	if err != nil {
-		fmt.Printf("  %s Failed to query current user\n", warnStyle.Render("!"))
+		RenderCheckItem(false, "user lookup", "failed querying user")
 		return
 	}
 
 	gids, err := u.GroupIds()
 	if err != nil {
-		fmt.Printf("  %s Failed to list user groups\n", warnStyle.Render("!"))
+		RenderCheckItem(false, "groups lookup", "failed listing groups")
 		return
 	}
 
@@ -155,25 +150,10 @@ func checkUserGroups(issues *int) {
 
 	for _, reqGroup := range []string{"video", "input"} {
 		if groupNames[reqGroup] {
-			fmt.Printf("  %s User is in '%s' group\n", successStyle.Render("✔"), reqGroup)
+			RenderCheckItem(true, fmt.Sprintf("User '%s' is in '%s' group", u.Username, reqGroup))
 		} else {
-			fmt.Printf("  %s User is not in '%s' group %s\n", warnStyle.Render("!"), reqGroup, dimStyle.Render("(run: sudo usermod -aG "+reqGroup+" "+u.Username+")"))
+			RenderCheckItem(false, fmt.Sprintf("User '%s' not in '%s' group", u.Username, reqGroup), "sudo usermod -aG "+reqGroup+" "+u.Username)
 		}
-	}
-}
-
-func checkConfigs(issues *int) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return
-	}
-
-	hyprConfig := filepath.Join(home, ".config", "hypr", "hyprland.lua")
-	if _, err := os.Stat(hyprConfig); err == nil {
-		fmt.Printf("  %s %-25s %s\n", successStyle.Render("✔"), "hyprland.lua", dimStyle.Render("Deployed in ~/.config/hypr/"))
-	} else {
-		fmt.Printf("  %s %-25s %s\n", warnStyle.Render("!"), "hyprland.lua", dimStyle.Render("Not deployed yet"))
-		*issues++
 	}
 }
 
