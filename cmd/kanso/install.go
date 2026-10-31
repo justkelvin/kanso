@@ -252,12 +252,25 @@ func installArchPackages(repoRoot string, dryRun bool) error {
 		return nil
 	}
 
+	// Validate or prompt for sudo password directly before pacman runs
+	if err := ensureSudo(); err != nil {
+		return fmt.Errorf("sudo authentication failed: %w", err)
+	}
+
 	args := append([]string{"pacman", "-S", "--needed"}, pkgs...)
 	cmd := exec.Command("sudo", args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	return cmd.Run()
+}
+
+func ensureSudo() error {
+	cmd := exec.Command("sudo", "-v")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 

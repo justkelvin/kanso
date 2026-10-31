@@ -17,13 +17,15 @@ var (
 	colorFg     = lipgloss.Color("#c0caf5")
 	colorMuted  = lipgloss.Color("#565f89")
 	colorBorder = lipgloss.Color("#2e3440")
-	colorBgCard = lipgloss.Color("#16161e")
 
 	cSuccess = lipgloss.NewStyle().Foreground(colorGreen).Bold(true)
 	cWarn    = lipgloss.NewStyle().Foreground(colorYellow).Bold(true)
 	cError   = lipgloss.NewStyle().Foreground(colorRed).Bold(true)
 	cMuted   = lipgloss.NewStyle().Foreground(colorMuted)
 	cCyan    = lipgloss.NewStyle().Foreground(colorCyan)
+
+	// Uniform width for all Daytona-style cards
+	cardWidth = 70
 
 	// ASCII Banner in modern slant style
 	asciiArt = "    __ __                        \n" +
@@ -64,17 +66,9 @@ type KeyVal struct {
 	Badge string
 }
 
-// RenderCard renders a Daytona-style bordered information card
+// RenderCard renders a Daytona-style bordered information card with uniform width
 func RenderCard(title string, rows []KeyVal) string {
-	maxKeyLen := 0
-	for _, r := range rows {
-		if len(r.Key) > maxKeyLen {
-			maxKeyLen = len(r.Key)
-		}
-	}
-	if maxKeyLen < 12 {
-		maxKeyLen = 12
-	}
+	keyColWidth := 26
 
 	var sb strings.Builder
 
@@ -91,7 +85,7 @@ func RenderCard(title string, rows []KeyVal) string {
 	for _, r := range rows {
 		keyStr := lipgloss.NewStyle().
 			Foreground(colorMuted).
-			Width(maxKeyLen + 4).
+			Width(keyColWidth).
 			Render(r.Key)
 
 		valStr := lipgloss.NewStyle().
@@ -106,6 +100,7 @@ func RenderCard(title string, rows []KeyVal) string {
 	}
 
 	cardStyle := lipgloss.NewStyle().
+		Width(cardWidth).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(colorBorder).
 		Padding(1, 2).
