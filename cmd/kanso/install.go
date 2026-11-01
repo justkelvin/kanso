@@ -297,12 +297,26 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		}
 	}
 
-	// Copy wallpaper asset to ~/.config/hypr/wallpaper.png
+	// Deploy default wallpaper to ~/.config/hypr/wallpapers/blue_distortion.png
 	srcWallpaper := filepath.Join(repoRoot, "assets", "wallpaper.png")
 	if _, err := os.Stat(srcWallpaper); err == nil {
-		dstWallpaper := filepath.Join(configDir, "hypr", "wallpaper.png")
+		wpDir := filepath.Join(configDir, "hypr", "wallpapers")
+		_ = os.MkdirAll(wpDir, 0755)
+		dstWallpaper := filepath.Join(wpDir, "blue_distortion.png")
 		if err := safeCopyFile(srcWallpaper, dstWallpaper, backupDir, backedUpCount, dryRun); err != nil {
 			return err
+		}
+
+		// Ensure active symlink ~/.config/hypr/wallpaper.png points to default wallpaper
+		activeSymlink := filepath.Join(configDir, "hypr", "wallpaper.png")
+		if !dryRun {
+			_ = os.Remove(activeSymlink)
+			_ = os.Symlink(dstWallpaper, activeSymlink)
+
+			// Prime thumbnail cache
+			cacheDir := filepath.Join(home, ".cache", "kanso", "thumbnails")
+			_ = os.MkdirAll(cacheDir, 0755)
+			_ = generateSquareThumbnail(dstWallpaper, filepath.Join(cacheDir, "blue_distortion.png"), 240)
 		}
 	}
 

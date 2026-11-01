@@ -11,10 +11,12 @@ hl.bind(mainMod .. " + SHIFT + RETURN", hl.dsp.exec_cmd("kitty"))
 hl.bind(mainMod .. " + O",              hl.dsp.exec_cmd("rofi -show drun"))
 hl.bind(mainMod .. " + E",              hl.dsp.exec_cmd("dolphin"))
 hl.bind(mainMod .. " + V",              hl.dsp.exec_cmd("cliphist list | rofi -dmenu | cliphist decode | wl-copy"))
+hl.bind(mainMod .. " + W",              hl.dsp.exec_cmd("kanso wallpaper pick"))
 
 -- Session & Window Management
 hl.bind(mainMod .. " + Q",              hl.dsp.window.close())
 hl.bind(mainMod .. " + SHIFT + C",      hl.dsp.window.close())
+hl.bind(mainMod .. " + SHIFT + L",      hl.dsp.exec_cmd("hyprlock"))
 hl.bind(mainMod .. " + F",              hl.dsp.window.fullscreen())
 hl.bind(mainMod .. " + T",              hl.dsp.window.float())
 hl.bind("CTRL + ALT + Delete",          hl.dsp.exec_cmd(powermenu))
