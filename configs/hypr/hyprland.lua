@@ -2,8 +2,9 @@
 -- Modular configuration files located in ~/.config/hypr/
 
 local home = os.getenv("HOME")
-local hypr_dir = home .. "/.config/hypr"
-package.path = hypr_dir .. "/?.lua;" .. hypr_dir .. "/?/init.lua;" .. package.path
+local source = debug.getinfo(1, "S").source:gsub("^@", "")
+local hypr_dir = source:match("(.*/)") or (home .. "/.config/hypr/")
+package.path = hypr_dir .. "?.lua;" .. hypr_dir .. "?/init.lua;" .. package.path
 
 require("monitors")
 require("autostart")

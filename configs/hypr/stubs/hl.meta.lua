@@ -11,6 +11,15 @@ hl = {}
 ---@field workspace hl.dsp.workspace Workspace dispatchers
 hl.dsp = {}
 
+---Exit Hyprland session
+---@return any
+function hl.dsp.exit() end
+
+---Focus window in a direction
+---@param options { direction: "left"|"right"|"up"|"down" }
+---@return any
+function hl.dsp.focus(options) end
+
 ---@class hl.dsp.window
 hl.dsp.window = {}
 
@@ -25,22 +34,12 @@ function hl.dsp.window.fullscreen(fullscreen_mode) end
 
 ---Toggle floating state for the active window
 ---@return any
-function hl.dsp.window.toggle_floating() end
+function hl.dsp.window.float() end
 
----Move window focus in a direction
----@param direction "l"|"r"|"u"|"d"|"left"|"right"|"up"|"down" Direction to move focus
+---Move active window in a direction or to a workspace
+---@param options { direction?: "left"|"right"|"up"|"down", workspace?: string }
 ---@return any
-function hl.dsp.window.move_focus(direction) end
-
----Move active window to a workspace
----@param workspace string Workspace name or index
----@return any
-function hl.dsp.window.move_to_workspace(workspace) end
-
----Move active window silently to a workspace
----@param workspace string Workspace name or index
----@return any
-function hl.dsp.window.move_to_workspace_silent(workspace) end
+function hl.dsp.window.move(options) end
 
 ---@class hl.dsp.workspace
 hl.dsp.workspace = {}

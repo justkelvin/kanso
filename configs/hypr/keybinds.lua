@@ -14,24 +14,25 @@ hl.bind(mainMod .. " + V",              hl.dsp.exec_cmd("cliphist list | rofi -d
 -- Window Management
 hl.bind(mainMod .. " + Q",              hl.dsp.window.close())
 hl.bind(mainMod .. " + SHIFT + C",      hl.dsp.window.close())
-hl.bind(mainMod .. " + M",              hl.dsp.dispatch("exit"))
+hl.bind(mainMod .. " + M",              hl.dsp.exit())
 hl.bind(mainMod .. " + F",              hl.dsp.window.fullscreen())
-hl.bind(mainMod .. " + T",              hl.dsp.window.toggle_floating())
+hl.bind(mainMod .. " + T",              hl.dsp.window.float())
 
 -- Focus Navigation (Vim & Arrow keys)
-hl.bind(mainMod .. " + H",              hl.dsp.window.move_focus("l"))
-hl.bind(mainMod .. " + L",              hl.dsp.window.move_focus("r"))
-hl.bind(mainMod .. " + K",              hl.dsp.window.move_focus("u"))
-hl.bind(mainMod .. " + J",              hl.dsp.window.move_focus("d"))
-hl.bind(mainMod .. " + Left",           hl.dsp.window.move_focus("l"))
-hl.bind(mainMod .. " + Right",          hl.dsp.window.move_focus("r"))
-hl.bind(mainMod .. " + Up",             hl.dsp.window.move_focus("u"))
-hl.bind(mainMod .. " + Down",           hl.dsp.window.move_focus("d"))
+hl.bind(mainMod .. " + H",              hl.dsp.focus({ direction = "left" }))
+hl.bind(mainMod .. " + L",              hl.dsp.focus({ direction = "right" }))
+hl.bind(mainMod .. " + K",              hl.dsp.focus({ direction = "up" }))
+hl.bind(mainMod .. " + J",              hl.dsp.focus({ direction = "down" }))
+hl.bind(mainMod .. " + Left",           hl.dsp.focus({ direction = "left" }))
+hl.bind(mainMod .. " + Right",          hl.dsp.focus({ direction = "right" }))
+hl.bind(mainMod .. " + Up",             hl.dsp.focus({ direction = "up" }))
+hl.bind(mainMod .. " + Down",           hl.dsp.focus({ direction = "down" }))
 
 -- Workspace Switching (1 - 9)
 for i = 1, 9 do
-    hl.bind(mainMod .. " + " .. i,           hl.dsp.workspace.switch(tostring(i)))
-    hl.bind(mainMod .. " + SHIFT + " .. i,   hl.dsp.window.move_to_workspace(tostring(i)))
+    local ws = tostring(i)
+    hl.bind(mainMod .. " + " .. ws,         function() hl.dispatch("workspace", ws) end)
+    hl.bind(mainMod .. " + SHIFT + " .. ws, hl.dsp.window.move({ workspace = ws }))
 end
 
 -- Laptop Audio Keys (WirePlumber / PipeWire)
