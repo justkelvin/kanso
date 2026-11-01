@@ -12,28 +12,10 @@ import (
 	"time"
 
 	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
-var (
-	dryRunFlag bool
-
-	bannerStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("#7aa2f7")).
-			BorderStyle(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#7aa2f7")).
-			Padding(0, 2).
-			MarginBottom(1)
-
-	boxStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#414868")).
-			Padding(0, 1).
-			MarginTop(1).
-			MarginBottom(1)
-)
+var dryRunFlag bool
 
 var installCmd = &cobra.Command{
 	Use:   "install",
@@ -549,11 +531,4 @@ func installKansoBinary(repoRoot string, dryRun bool) error {
 	}
 
 	return nil
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }

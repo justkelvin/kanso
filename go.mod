@@ -1,6 +1,6 @@
 module kanso
 
-go 1.27.0
+go 1.23.0
 
 require (
 	github.com/charmbracelet/huh v1.0.0

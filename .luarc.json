@@ -1,11 +1,18 @@
 {
   "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
   "runtime": {
-    "version": "LuaJIT"
+    "version": "LuaJIT",
+    "path": [
+      "?.lua",
+      "?/init.lua",
+      "configs/hypr/?.lua",
+      "configs/hypr/?/init.lua"
+    ]
   },
   "workspace": {
     "checkThirdParty": false,
     "library": [
+      "configs/hypr",
       "configs/hypr/stubs",
       "/usr/share/hypr/stubs"
     ]

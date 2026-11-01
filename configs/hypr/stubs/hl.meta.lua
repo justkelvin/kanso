@@ -217,5 +217,6 @@ function hl.set_option(key, value) end
 ---@field disable_hyprland_logo? boolean Disable anime mascot / default wallpaper
 ---@field disable_splash_rendering? boolean Disable splash text
 ---@field force_default_wallpaper? integer Default wallpaper mode
+---@field background_color? string Hex or RGB background color (e.g. "0x1a1b26")
 ---@field vfr? boolean Variable frame rate
 ---@field vrr? integer Variable refresh rate (0: off, 1: on, 2: fullscreen only)

@@ -50,6 +50,48 @@ var statusCmd = &cobra.Command{
 		})
 		fmt.Println(sessionCard)
 
+		// Live Compositor Telemetry Card (if Hyprland IPC is reachable)
+		if monitors, err := GetHyprlandMonitors(); err == nil && len(monitors) > 0 {
+			var ipcRows []KeyVal
+			for _, m := range monitors {
+				monStr := fmt.Sprintf("%dx%d @ %.0fHz (scale %.1fx)", m.Width, m.Height, m.RefreshRate, m.Scale)
+				badge := BadgeGreen("ACTIVE")
+				if m.Focused {
+					badge = BadgeGreen("FOCUSED")
+				}
+				ipcRows = append(ipcRows, KeyVal{
+					Key:   "Monitor (" + m.Name + ")",
+					Value: monStr,
+					Badge: badge,
+				})
+			}
+
+			if workspaces, err := GetHyprlandWorkspaces(); err == nil {
+				totalWindows := 0
+				for _, ws := range workspaces {
+					totalWindows += ws.Windows
+				}
+				ipcRows = append(ipcRows, KeyVal{
+					Key:   "Workspaces",
+					Value: fmt.Sprintf("%d active (%d open windows)", len(workspaces), totalWindows),
+				})
+			}
+
+			if win, err := GetHyprlandActiveWindow(); err == nil && win != nil && win.Class != "" {
+				title := win.Title
+				if len(title) > 30 {
+					title = title[:27] + "..."
+				}
+				ipcRows = append(ipcRows, KeyVal{
+					Key:   "Focused Window",
+					Value: fmt.Sprintf("%s (%s)", win.Class, title),
+				})
+			}
+
+			ipcCard := RenderCard("Compositor telemetry (IPC)", ipcRows)
+			fmt.Println(ipcCard)
+		}
+
 		// 2. Configuration Files Card
 		configs := []struct {
 			name string

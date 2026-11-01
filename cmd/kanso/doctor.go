@@ -73,6 +73,11 @@ var doctorCmd = &cobra.Command{
 		checkUserGroups(&issues)
 		fmt.Println()
 
+		// 5. Compositor & IPC Readiness
+		fmt.Println(cMuted.Render("  COMPOSITOR & IPC"))
+		checkHyprlandIPC()
+		fmt.Println()
+
 		// Summary Card
 		stateBadge := BadgeGreen("PASSED")
 		stateDesc := "System is ready for Hyprland"
@@ -154,6 +159,33 @@ func checkUserGroups(issues *int) {
 		} else {
 			RenderCheckItem(false, fmt.Sprintf("User '%s' not in '%s' group", u.Username, reqGroup), "sudo usermod -aG "+reqGroup+" "+u.Username)
 		}
+	}
+}
+
+func checkHyprlandIPC() {
+	sock1, err1 := getHyprlandSocketPath(".socket.sock")
+	if err1 != nil {
+		RenderCheckItem(true, "Compositor IPC", "ready (activates automatically when Hyprland starts)")
+		return
+	}
+
+	sig := os.Getenv("HYPRLAND_INSTANCE_SIGNATURE")
+	if sig != "" {
+		RenderCheckItem(true, "Instance signature", sig)
+	}
+
+	RenderCheckItem(true, "IPC Command Socket (Socket 1)", sock1)
+
+	if sock2, err2 := getHyprlandSocketPath(".socket2.sock"); err2 == nil {
+		RenderCheckItem(true, "IPC Event Stream (Socket 2)", sock2)
+	} else {
+		RenderCheckItem(false, "IPC Event Stream (Socket 2)", err2.Error())
+	}
+
+	if err := PingHyprlandIPC(); err == nil {
+		RenderCheckItem(true, "IPC Ping", "connected and responsive")
+	} else {
+		RenderCheckItem(false, "IPC Ping", err.Error())
 	}
 }
 
