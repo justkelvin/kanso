@@ -69,8 +69,9 @@ func runInstaller(dryRun bool) error {
 				Options(
 					huh.NewOption("Install Arch packages (pacman)", "packages").Selected(true),
 					huh.NewOption("Deploy configuration files (with backups)", "dotfiles").Selected(true),
-					huh.NewOption("Enable user services (PipeWire & WirePlumber)", "services").Selected(true),
 					huh.NewOption("Configure TTY1 autostart (~/.bash_profile)", "bash").Selected(true),
+					huh.NewOption("Enable user services (PipeWire & WirePlumber)", "services").Selected(true),
+					huh.NewOption("Install Kanso CLI binary (~/.local/bin/kanso)", "binary").Selected(true),
 				).
 				Value(&selectedSteps),
 		),
@@ -138,6 +139,15 @@ func runInstaller(dryRun bool) error {
 		fmt.Println()
 	}
 
+	// Step 5: Install CLI binary
+	if stepMap["binary"] {
+		fmt.Println(cMuted.Render("  5. CLI BINARY INSTALLATION"))
+		if err := installKansoBinary(repoRoot, dryRun); err != nil {
+			RenderCheckItem(false, "Binary installation failed", err.Error())
+		}
+		fmt.Println()
+	}
+
 	// Backup Summary Card (if backups were made)
 	if backedUpCount > 0 {
 		relBackup, _ := filepath.Rel(home, sessionBackupDir)
@@ -150,12 +160,16 @@ func runInstaller(dryRun bool) error {
 	}
 
 	// Finish Summary Card
-	summaryCard := RenderCard("Installation summary", []KeyVal{
+	summaryItems := []KeyVal{
 		{Key: "Compositor", Value: "Hyprland (Native Lua)"},
 		{Key: "Surfaces", Value: "Waybar, Kitty, Rofi, Mako"},
 		{Key: "Audio & Power", Value: "PipeWire, WirePlumber, Hypridle"},
-		{Key: "State", Badge: BadgeGreen("READY")},
-	})
+	}
+	if stepMap["binary"] {
+		summaryItems = append(summaryItems, KeyVal{Key: "CLI Binary", Value: "~/.local/bin/kanso"})
+	}
+	summaryItems = append(summaryItems, KeyVal{Key: "State", Badge: BadgeGreen("READY")})
+	summaryCard := RenderCard("Installation summary", summaryItems)
 	fmt.Println(summaryCard)
 
 	// Offer to start Hyprland if in TTY
@@ -201,7 +215,7 @@ func findRepoRoot() (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("could not find kanso repository containing packages/arch.txt")
+	return "", fmt.Errorf("could not find kanso repository (please run 'kanso install' from within the cloned repository directory)")
 }
 
 func isRepoDir(dir string) bool {
@@ -481,6 +495,57 @@ func enableUserServices(dryRun bool) error {
 		} else {
 			RenderCheckItem(true, "Activated and started "+svc)
 		}
+	}
+
+	return nil
+}
+
+// Build and install the standalone kanso CLI binary into ~/.local/bin/kanso
+func installKansoBinary(repoRoot string, dryRun bool) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("unable to resolve user home directory: %w", err)
+	}
+
+	binDir := filepath.Join(home, ".local", "bin")
+	targetPath := filepath.Join(binDir, "kanso")
+
+	if dryRun {
+		RenderCheckItem(true, "Simulated building kanso binary", targetPath)
+		return nil
+	}
+
+	if err := os.MkdirAll(binDir, 0755); err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", binDir, err)
+	}
+
+	// Compile using Go toolchain if available
+	if goPath, err := exec.LookPath("go"); err == nil && goPath != "" {
+		cmd := exec.Command(goPath, "build", "-ldflags", "-s -w", "-o", targetPath, "./cmd/kanso")
+		cmd.Dir = repoRoot
+		cmd.Env = os.Environ()
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return fmt.Errorf("go build failed: %s (%w)", strings.TrimSpace(string(out)), err)
+		}
+	} else {
+		// Fallback: Copy current running executable into ~/.local/bin/kanso
+		currentExe, err := os.Executable()
+		if err != nil {
+			return fmt.Errorf("unable to determine running executable: %w", err)
+		}
+		if err := copyRawFile(currentExe, targetPath, 0755); err != nil {
+			return fmt.Errorf("failed to copy executable to %s: %w", targetPath, err)
+		}
+	}
+
+	if err := os.Chmod(targetPath, 0755); err != nil {
+		return fmt.Errorf("failed to set executable permissions on %s: %w", targetPath, err)
+	}
+
+	RenderCheckItem(true, "Installed kanso CLI binary", targetPath)
+
+	if !strings.Contains(os.Getenv("PATH"), binDir) {
+		fmt.Printf("    %s %s\n", cCyan.Render("Tip:"), cMuted.Render("Run 'source ~/.bashrc' or restart terminal to use 'kanso' anywhere."))
 	}
 
 	return nil
