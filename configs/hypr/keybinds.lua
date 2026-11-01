@@ -3,6 +3,7 @@
 local mainMod = "SUPER"
 local home = os.getenv("HOME")
 local screenshot = home .. "/.config/hypr/scripts/screenshot.sh"
+local powermenu = home .. "/.config/hypr/scripts/powermenu.sh"
 
 -- Core Applications
 hl.bind(mainMod .. " + RETURN",         hl.dsp.exec_cmd("kitty"))
@@ -11,12 +12,12 @@ hl.bind(mainMod .. " + O",              hl.dsp.exec_cmd("rofi -show drun"))
 hl.bind(mainMod .. " + E",              hl.dsp.exec_cmd("dolphin"))
 hl.bind(mainMod .. " + V",              hl.dsp.exec_cmd("cliphist list | rofi -dmenu | cliphist decode | wl-copy"))
 
--- Window Management
+-- Session & Window Management
 hl.bind(mainMod .. " + Q",              hl.dsp.window.close())
 hl.bind(mainMod .. " + SHIFT + C",      hl.dsp.window.close())
-hl.bind(mainMod .. " + M",              hl.dsp.exit())
 hl.bind(mainMod .. " + F",              hl.dsp.window.fullscreen())
 hl.bind(mainMod .. " + T",              hl.dsp.window.float())
+hl.bind("CTRL + ALT + Delete",          hl.dsp.exec_cmd(powermenu))
 
 -- Focus Navigation (Vim & Arrow keys)
 hl.bind(mainMod .. " + H",              hl.dsp.focus({ direction = "left" }))
