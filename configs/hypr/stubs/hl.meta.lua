@@ -15,8 +15,8 @@ hl.dsp = {}
 ---@return any
 function hl.dsp.exit() end
 
----Focus window in a direction
----@param options { direction: "left"|"right"|"up"|"down" }
+---Focus window in a direction or switch to a workspace
+---@param options { direction?: "left"|"right"|"up"|"down", workspace?: integer|string, on_current_monitor?: boolean }
 ---@return any
 function hl.dsp.focus(options) end
 

@@ -31,9 +31,9 @@ hl.bind(mainMod .. " + Down",           hl.dsp.focus({ direction = "down" }))
 
 -- Workspace Switching (1 - 9)
 for i = 1, 9 do
-    local ws = tostring(i)
-    hl.bind(mainMod .. " + " .. ws,         function() hl.dispatch("workspace", ws) end)
-    hl.bind(mainMod .. " + SHIFT + " .. ws, hl.dsp.window.move({ workspace = ws }))
+    local key = tostring(i)
+    hl.bind(mainMod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
+    hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
 end
 
 -- Laptop Audio Keys (WirePlumber / PipeWire)

@@ -18,6 +18,7 @@ kitty
 rofi
 waybar
 mako
+libnotify
 zed
 dolphin
 

@@ -10,8 +10,9 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hypridle &")
     hl.exec_cmd("mako &")
 
-    -- Network tray applet
+    -- Network & Bluetooth tray applets
     hl.exec_cmd("nm-applet --indicator &")
+    hl.exec_cmd("blueman-applet &")
 
     -- Clipboard history watcher
     hl.exec_cmd("wl-paste --type text --watch cliphist store &")
