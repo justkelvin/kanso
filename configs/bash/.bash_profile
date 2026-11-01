@@ -33,6 +33,6 @@ export TERMINAL=kitty
 
 # 3. Autostart Hyprland on tty1 login using the official start-hyprland wrapper
 # Boots directly into Hyprland without requiring a display manager.
-if [ -z "$DISPLAY" ] && [ "$XDG_VTNR" -eq 1 ]; then
+if [ -z "$DISPLAY" ] && [ "$XDG_VTNR" = "1" ]; then
     exec start-hyprland
 fi
