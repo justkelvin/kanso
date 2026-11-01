@@ -31,8 +31,8 @@ export EDITOR=nano
 export VISUAL=nano
 export TERMINAL=kitty
 
-# 3. Autostart Hyprland on tty1 login
+# 3. Autostart Hyprland on tty1 login using the official start-hyprland wrapper
 # Boots directly into Hyprland without requiring a display manager.
 if [ -z "$DISPLAY" ] && [ "$XDG_VTNR" -eq 1 ]; then
-    exec Hyprland
+    exec start-hyprland
 fi

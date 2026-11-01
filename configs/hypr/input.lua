@@ -13,9 +13,11 @@ hl.config({
             middle_button_emulation = true,
         },
     },
+})
 
-    gestures = {
-        workspace_swipe = true,
-        workspace_swipe_fingers = 3,
-    },
+-- Touchpad Gestures
+hl.gesture({
+    fingers = 3,
+    direction = "horizontal",
+    action = "workspace",
 })

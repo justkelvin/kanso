@@ -167,8 +167,8 @@ func runInstaller(dryRun bool) error {
 			Run()
 
 		if launch {
-			fmt.Println("Launching Hyprland session...")
-			c := exec.Command("Hyprland")
+			fmt.Println("Launching Hyprland session via start-hyprland...")
+			c := exec.Command("start-hyprland")
 			c.Stdin = os.Stdin
 			c.Stdout = os.Stdout
 			c.Stderr = os.Stderr

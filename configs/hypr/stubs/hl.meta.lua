@@ -94,10 +94,48 @@ function hl.dispatch(dispatcher, args) end
 ---@return table Window table
 function hl.get_active_window() end
 
+---Declare a touchpad gesture
+---@param options hl.GestureOptions
+function hl.gesture(options) end
+
+---Register a timing curve for animations
+---@param name string Name of the curve
+---@param options hl.CurveOptions
+function hl.curve(name, options) end
+
+---Configure animation behavior for a layout scope
+---@param options hl.AnimationOptions
+function hl.animation(options) end
+
 ---Set an individual configuration option
 ---@param key string Option path (e.g. "general:gaps_in")
 ---@param value any Value to set
 function hl.set_option(key, value) end
+
+--------------------------------------------------------------------------------
+-- API Helper Types
+--------------------------------------------------------------------------------
+
+---@class hl.GestureOptions
+---@field fingers integer Number of fingers (e.g. 3)
+---@field direction "horizontal"|"vertical"|"up"|"down"|"left"|"right" Direction
+---@field action "workspace"|"close"|string Action to perform
+---@field mods? string Modifier keys
+
+---@class hl.CurveOptions
+---@field type "bezier"|"spring" Curve type
+---@field points? number[][] Control points for bezier (e.g. {{0.05, 0.9}, {0.1, 1.05}})
+---@field mass? number Spring mass
+---@field stiffness? number Spring stiffness
+---@field dampening? number Spring dampening
+
+---@class hl.AnimationOptions
+---@field leaf "global"|"windows"|"windowsIn"|"windowsOut"|"border"|"fade"|"workspaces" Animation target scope
+---@field enabled? boolean Whether animation is enabled
+---@field speed? number Animation speed
+---@field bezier? string Registered curve name
+---@field spring? string Registered spring curve name
+---@field style? string Animation style (e.g. "slide", "popin", "popin 80%")
 
 --------------------------------------------------------------------------------
 -- Configuration Table Types
@@ -106,9 +144,8 @@ function hl.set_option(key, value) end
 ---@class hl.Config
 ---@field general? hl.Config.General General layout and appearance settings
 ---@field decoration? hl.Config.Decoration Window decorations, rounding, blur, shadows
----@field animations? hl.Config.Animations Animation curves and speeds
+---@field animations? hl.Config.Animations Animation enable switch
 ---@field input? hl.Config.Input Keyboard, mouse, and touchpad settings
----@field gestures? hl.Config.Gestures Touchpad workspace gestures
 ---@field dwindle? hl.Config.Dwindle Dwindle layout settings
 ---@field master? hl.Config.Master Master layout settings
 ---@field misc? hl.Config.Misc Miscellaneous behavior settings
@@ -171,14 +208,7 @@ function hl.set_option(key, value) end
 ---@field middle_button_emulation? boolean Enable 3-finger middle click emulation
 ---@field clickfinger_behavior? boolean 1/2/3 fingers for left/right/middle click
 
----@class hl.Config.Gestures
----@field workspace_swipe? boolean Enable touchpad 3-finger workspace swipe
----@field workspace_swipe_fingers? integer Number of fingers for swipe
----@field workspace_swipe_distance? integer Minimum swipe distance
----@field workspace_swipe_invert? boolean Invert swipe direction
-
 ---@class hl.Config.Dwindle
----@field pseudotile? boolean Enable pseudotiling
 ---@field preserve_split? boolean Preserve split direction when closing windows
 
 ---@class hl.Config.Master
