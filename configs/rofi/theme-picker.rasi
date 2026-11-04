@@ -1,0 +1,107 @@
+/**
+ * Kanso Minimal Theme Grid Picker
+ * Visual cards for theme selection
+ */
+
+configuration {
+    font: "JetBrainsMono Nerd Font 10";
+    show-icons: true;
+    display-dmenu: "󰔎 ";
+}
+
+@theme "/dev/null"
+@import "theme.rasi"
+
+* {
+    bg: @main-bg;
+    bg-alt: @main-bg;
+    fg: @main-fg;
+    fg-alt: #565f89;
+    accent: @select-bg;
+    urgent: #f7768e;
+
+    background-color: transparent;
+    text-color: @fg;
+    margin: 0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    location: center;
+    anchor: center;
+    width: 820px;
+    height: 340px;
+    border-radius: 12px;
+    border: 2px;
+    border-color: @accent;
+    background-color: @bg;
+    padding: 16px;
+}
+
+mainbox {
+    spacing: 12px;
+    padding: 0;
+    children: [ "inputbar", "listview" ];
+}
+
+inputbar {
+    spacing: 8px;
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    children: [ "prompt", "entry" ];
+}
+
+prompt {
+    text-color: @accent;
+    font: "JetBrainsMono Nerd Font Bold 11";
+}
+
+entry {
+    placeholder: "Select Theme...";
+    placeholder-color: @fg-alt;
+    text-color: @fg;
+}
+
+listview {
+    columns: 4;
+    lines: 1;
+    cycle: true;
+    dynamic: true;
+    layout: vertical;
+    flow: horizontal;
+    spacing: 12px;
+    padding: 4px 0 0 0;
+}
+
+element {
+    orientation: vertical;
+    padding: 8px;
+    border-radius: 8px;
+    spacing: 8px;
+    cursor: pointer;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color: @fg;
+}
+
+element selected.normal {
+    background-color: @accent;
+    text-color: #1a1b26;
+}
+
+element-icon {
+    size: 160px;
+    horizontal-align: 0.5;
+    border-radius: 6px;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    text-color: inherit;
+    font: "JetBrainsMono Nerd Font Bold 10";
+}

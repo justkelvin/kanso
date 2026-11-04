@@ -1,0 +1,69 @@
+/**
+ * Kanso Wallbash Mode Selector
+ * Compact list menu for switching between theme, auto, dark, and light
+ */
+
+configuration {
+    font: "JetBrainsMono Nerd Font 11";
+    show-icons: false;
+    display-dmenu: "󰸉 Wallbash Mode:";
+}
+
+@theme "/dev/null"
+@import "theme.rasi"
+
+* {
+    bg: @main-bg;
+    fg: @main-fg;
+    accent: @select-bg;
+    text-color: @fg;
+    background-color: transparent;
+}
+
+window {
+    location: center;
+    width: 380px;
+    border-radius: 12px;
+    border: 2px;
+    border-color: @accent;
+    background-color: @bg;
+    padding: 14px;
+}
+
+mainbox {
+    spacing: 10px;
+    children: [ "inputbar", "listview" ];
+}
+
+inputbar {
+    padding: 6px 10px;
+    children: [ "prompt" ];
+}
+
+prompt {
+    font: "JetBrainsMono Nerd Font Bold 11";
+    text-color: @accent;
+}
+
+listview {
+    lines: 4;
+    columns: 1;
+    spacing: 6px;
+    cycle: true;
+}
+
+element {
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+element selected.normal {
+    background-color: @accent;
+    text-color: #1a1b26;
+}
+
+element-text {
+    text-color: inherit;
+    font: "JetBrainsMono Nerd Font Bold 10";
+}

@@ -1,3 +1,14 @@
+@import "theme.css";
+
+/* Fallback default variables if theme.css is not yet present */
+@define-color bar-bg rgba(26, 27, 38, 0.88);
+@define-color main-bg #24283b;
+@define-color main-fg #c0caf5;
+@define-color wb-act-bg #7aa2f7;
+@define-color wb-act-fg #1a1b26;
+@define-color wb-hvr-bg rgba(122, 162, 247, 0.2);
+@define-color wb-hvr-fg #c0caf5;
+
 * {
     font-family: "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
     font-size: 13px;
@@ -6,15 +17,15 @@
 }
 
 window#waybar {
-    background-color: rgba(26, 27, 38, 0.88);
+    background-color: @bar-bg;
     border-radius: 8px;
-    color: #c0caf5;
+    color: @main-fg;
     border: 1px solid rgba(122, 162, 247, 0.2);
 }
 
 /* Modules Left */
 #workspaces {
-    background-color: rgba(36, 40, 59, 0.6);
+    background-color: @main-bg;
     border-radius: 6px;
     margin: 4px;
     padding: 0 4px;
@@ -29,12 +40,13 @@ window#waybar {
 }
 
 #workspaces button:hover {
-    background-color: rgba(122, 162, 247, 0.15);
-    color: #c0caf5;
+    background-color: @wb-hvr-bg;
+    color: @wb-hvr-fg;
 }
 
 #workspaces button.active {
-    color: #7aa2f7;
+    background-color: @wb-act-bg;
+    color: @wb-act-fg;
     font-weight: bold;
 }
 

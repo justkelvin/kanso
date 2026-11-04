@@ -1,0 +1,10 @@
+/* Kanso Active Waybar Theme
+ * Updated automatically by 'kanso theme' and wallbash
+ */
+@define-color bar-bg rgba(36, 40, 59, 0.85);
+@define-color main-bg #24283b;
+@define-color main-fg #7aa2f7;
+@define-color wb-act-bg #bb9af7;
+@define-color wb-act-fg #1a1b26;
+@define-color wb-hvr-bg #7aa2f7;
+@define-color wb-hvr-fg #cfc9c2;

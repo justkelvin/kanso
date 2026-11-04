@@ -10,13 +10,14 @@ configuration {
 }
 
 @theme "/dev/null"
+@import "theme.rasi"
 
 * {
-    bg: #1a1b26f5;
-    bg-alt: #24283b;
-    fg: #c0caf5;
+    bg: @main-bg;
+    bg-alt: @main-bg;
+    fg: @main-fg;
     fg-alt: #565f89;
-    accent: #7aa2f7;
+    accent: @select-bg;
     urgent: #f7768e;
 
     background-color: transparent;

@@ -10,6 +10,9 @@ require("monitors")
 require("autostart")
 require("input")
 require("look")
+hl.config({
+    source = { hypr_dir .. "theme.conf" },
+})
 require("animations")
 require("keybinds")
 require("rules")
