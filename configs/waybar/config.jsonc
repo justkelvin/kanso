@@ -15,6 +15,7 @@
         "clock"
     ],
     "modules-right": [
+        "custom/caffeine",
         "pulseaudio",
         "backlight",
         "battery",
@@ -37,6 +38,16 @@
     "clock": {
         "format": "󰥔 {:%H:%M  %a, %b %d}",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+
+    "custom/caffeine": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "kanso caffeine status --json",
+        "on-click": "kanso caffeine toggle",
+        "signal": 9,
+        "interval": "once",
+        "tooltip": true
     },
 
     "pulseaudio": {

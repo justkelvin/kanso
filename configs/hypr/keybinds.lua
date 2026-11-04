@@ -12,6 +12,7 @@ hl.bind(mainMod .. " + O",              hl.dsp.exec_cmd("rofi -show drun"))
 hl.bind(mainMod .. " + E",              hl.dsp.exec_cmd("dolphin"))
 hl.bind(mainMod .. " + V",              hl.dsp.exec_cmd("cliphist list | rofi -dmenu | cliphist decode | wl-copy"))
 hl.bind(mainMod .. " + W",              hl.dsp.exec_cmd("kanso wallpaper pick"))
+hl.bind(mainMod .. " + I",              hl.dsp.exec_cmd("kanso caffeine toggle"))
 
 -- Session & Window Management
 hl.bind(mainMod .. " + Q",              hl.dsp.window.close())
