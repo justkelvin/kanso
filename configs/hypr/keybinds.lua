@@ -21,6 +21,10 @@ hl.bind(mainMod .. " + F",              hl.dsp.window.fullscreen())
 hl.bind(mainMod .. " + T",              hl.dsp.window.float())
 hl.bind("CTRL + ALT + Delete",          hl.dsp.exec_cmd(powermenu))
 
+-- Mouse Window Controls (SUPER + LMB drag to move, SUPER + RMB drag to resize)
+hl.bind(mainMod .. " + mouse:272",      hl.dsp.window.drag(),   { mouse = true })
+hl.bind(mainMod .. " + mouse:273",      hl.dsp.window.resize(), { mouse = true })
+
 -- Focus Navigation (Vim & Arrow keys)
 hl.bind(mainMod .. " + H",              hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + L",              hl.dsp.focus({ direction = "right" }))

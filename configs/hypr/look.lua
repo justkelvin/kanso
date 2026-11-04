@@ -11,6 +11,9 @@ hl.config({
         },
         layout = "dwindle",
         resize_on_border = true,
+        extend_border_grab_area = 15,
+        hover_icon_on_border = true,
+        float_force_onscreen = 2,
     },
 
     decoration = {
@@ -39,5 +42,6 @@ hl.config({
         disable_splash_rendering = true,
         force_default_wallpaper = 0,
         background_color = "0x1a1b26",
+        new_float_force_onscreen = 2,
     },
 })
