@@ -19,6 +19,7 @@ var (
 	colorBorder = lipgloss.Color("#2e3440")
 
 	cSuccess = lipgloss.NewStyle().Foreground(colorGreen).Bold(true)
+	cGreen   = lipgloss.NewStyle().Foreground(colorGreen)
 	cWarn    = lipgloss.NewStyle().Foreground(colorYellow).Bold(true)
 	cError   = lipgloss.NewStyle().Foreground(colorRed).Bold(true)
 	cMuted   = lipgloss.NewStyle().Foreground(colorMuted)

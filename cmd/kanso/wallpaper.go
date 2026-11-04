@@ -374,7 +374,17 @@ func applyWallpaper(item WallpaperItem) error {
 		_ = os.WriteFile(getWallpaperStateFile(), data, 0644)
 	}
 
-	// 4. Send Desktop Notification
+	// 4. Update Theme State & Trigger Wallbash if dynamic mode is active
+	themeState := loadThemeState()
+	themeState.CurrentWallpaper = item.FullPath
+	saveThemeState(themeState)
+
+	if themeState.WallbashMode > 0 {
+		modeStr := themeModes[themeState.WallbashMode%len(themeModes)]
+		_ = applyWallbashFromWallpaper(item.FullPath, modeStr)
+	}
+
+	// 5. Send Desktop Notification
 	thumbIcon := item.ThumbnailPath
 	if _, err := os.Stat(thumbIcon); err != nil {
 		thumbIcon = "preferences-desktop-wallpaper"

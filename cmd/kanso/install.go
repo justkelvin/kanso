@@ -297,6 +297,8 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		{filepath.Join(repoRoot, "configs", "mako"), filepath.Join(configDir, "mako")},
 		{filepath.Join(repoRoot, "configs", "satty"), filepath.Join(configDir, "satty")},
 		{filepath.Join(repoRoot, "configs", "xdg-desktop-portal"), filepath.Join(configDir, "xdg-desktop-portal")},
+		{filepath.Join(repoRoot, "configs", "wallbash"), filepath.Join(home, ".config", "kanso", "wallbash")},
+		{filepath.Join(repoRoot, "themes"), filepath.Join(home, ".config", "kanso", "themes")},
 	}
 
 	for _, target := range targets {

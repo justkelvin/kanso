@@ -50,6 +50,16 @@ var statusCmd = &cobra.Command{
 		})
 		fmt.Println(sessionCard)
 
+		// Theme & Wallbash State Card
+		themeState := loadThemeState()
+		modeStr := themeModes[themeState.WallbashMode%len(themeModes)]
+		themeCard := RenderCard("Active theme & wallbash", []KeyVal{
+			{Key: "Theme Preset", Value: themeState.CurrentTheme, Badge: BadgeGreen(themeState.CurrentTheme)},
+			{Key: "Wallbash Mode", Value: fmt.Sprintf("%s (%d)", modeStr, themeState.WallbashMode)},
+			{Key: "Active Wallpaper", Value: themeState.CurrentWallpaper},
+		})
+		fmt.Println(themeCard)
+
 		// Live Compositor Telemetry Card (if Hyprland IPC is reachable)
 		if monitors, err := GetHyprlandMonitors(); err == nil && len(monitors) > 0 {
 			var ipcRows []KeyVal
