@@ -65,9 +65,40 @@ The `kanso` CLI provides system management, diagnostics, and deployment tools:
 | `kanso doctor` | Run diagnostic health checks on packages, services, and Wayland readiness |
 | `kanso status` | Display the current status of installed desktop packages and configs |
 | `kanso wallpaper` | Manage and pick desktop wallpapers (`pick`, `next`, `prev`, `list`, `set`) |
+| `kanso theme` | Manage themes and Wallbash dynamic colors (`list`, `get`, `set`, `pick`, `mode`, `mode-menu`, `wallbash`) |
 | `kanso caffeine` | Control idle inhibitor state (`toggle`, `on`, `off`, `status`) |
 | `kanso version` | Show the Kanso CLI version, commit hash, and Go runtime details |
 | `kanso help` | Display command-line usage and available subcommands |
+
+---
+
+## Dynamic Theming & Wallbash
+
+Kanso includes a native, lightweight theming and color engine written in Go with zero shell script overhead. It unifies presets and dynamic wallpaper-driven colors across Kitty, Rofi, Waybar, Hyprland, GTK, Qt, and Kvantum.
+
+### 1. Keybindings
+
+* <kbd>SUPER</kbd> + <kbd>SHIFT</kbd> + <kbd>T</kbd>: Opens the visual Rofi theme picker grid (`kanso theme pick`).
+* <kbd>SUPER</kbd> + <kbd>SHIFT</kbd> + <kbd>R</kbd>: Opens the Rofi Wallbash mode selector (`kanso theme mode-menu`).
+* <kbd>SUPER</kbd> + <kbd>W</kbd>: Opens the visual Rofi wallpaper picker (`kanso wallpaper pick`).
+
+### 2. Wallbash Modes
+
+| Mode | Value | Behavior |
+| :--- | :---: | :--- |
+| **theme** | `0` | Locked to the selected theme's own presets. Changing wallpapers will not recolor applications. |
+| **auto** | `1` | Automatically samples the wallpaper luminance; dynamically extracts a matching dark or light palette via K-means clustering. |
+| **dark** | `2` | Extracts a forced dark palette from the active wallpaper with high contrast text. |
+| **light** | `3` | Extracts a forced light palette from the active wallpaper with crisp dark text. |
+
+### 3. Included Themes
+
+* **Tokyo Night**: Classic deep blue-violet neon palette with subtle gradients.
+* **Catppuccin Mocha**: Soothing dark pastel aesthetic.
+* **Catppuccin Latte**: Bright, crisp light theme with pastel accents.
+* **Graphite Mono**: Minimalist grayscale monochrome design with static `.dcol` overrides.
+
+Each theme provides its own Hyprland layout rules, Kitty terminal colors, Rofi styling, Waybar CSS variables, Kvantum Qt widget skins, wallpapers, and GTK icon/cursor settings.
 
 ---
 
@@ -153,13 +184,14 @@ kanso/
 │   ├── mako/        # Notification daemon styling
 │   ├── rofi/        # Tokyo Night application launcher & wallpaper grid
 │   ├── satty/       # Wayland screenshot annotator config (config.toml)
+│   ├── wallbash/    # Dynamic color templates (.dcol) for Kitty, Waybar, Rofi, Hyprland
 │   ├── waybar/      # Status bar modules and styling
 │   └── xdg-desktop-portal/ # Portal routing overrides (hyprland-portals.conf)
 ├── packages/
 │   ├── arch.txt     # Official repository dependencies
 │   ├── aur.txt      # AUR packages (via yay)
 │   └── build.txt    # Build prerequisites
-├── themes/          # Styling and color themes
+├── themes/          # Theme presets (Catppuccin Mocha/Latte, Tokyo Night, Graphite Mono)
 ├── CONTRIBUTING.md  # Contribution guidelines
 ├── LICENSE          # MIT License
 └── README.md
