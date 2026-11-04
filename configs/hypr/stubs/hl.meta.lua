@@ -170,7 +170,6 @@ function hl.set_option(key, value) end
 ---@field resize_on_border? boolean Allow resizing windows by dragging borders
 ---@field extend_border_grab_area? integer Extend border grab area in pixels
 ---@field hover_icon_on_border? boolean Show directional resize cursor icon when hovering near borders
----@field float_force_onscreen? integer Force floating windows onscreen (0: none, 1: partial, 2: full clamp)
 ---@field allow_tearing? boolean Allow tearing for gaming
 
 ---@class hl.Config.General.Col
@@ -229,6 +228,7 @@ function hl.set_option(key, value) end
 ---@field disable_splash_rendering? boolean Disable splash text
 ---@field force_default_wallpaper? integer Default wallpaper mode
 ---@field background_color? string Hex or RGB background color (e.g. "0x1a1b26")
+---@field float_force_onscreen? integer Force floating windows onscreen (0: none, 1: partial, 2: full clamp)
 ---@field new_float_force_onscreen? integer Force newly spawned floating windows onscreen (0: none, 1: partial, 2: full clamp)
 ---@field vfr? boolean Variable frame rate
 ---@field vrr? integer Variable refresh rate (0: off, 1: on, 2: fullscreen only)
