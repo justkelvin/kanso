@@ -150,6 +150,20 @@ func checkCredentialStore(issues *int) {
 		*issues++
 	}
 
+	if _, err := exec.LookPath("gpg"); err == nil {
+		RenderCheckItem(true, "gnupg (gpg)", "OpenPGP suite and key manager")
+	} else {
+		RenderCheckItem(false, "gnupg (gpg)", "missing gnupg package")
+		*issues++
+	}
+
+	if _, err := exec.LookPath("pinentry"); err == nil {
+		RenderCheckItem(true, "pinentry", "passphrase entry dialog provider")
+	} else {
+		RenderCheckItem(false, "pinentry", "missing pinentry package")
+		*issues++
+	}
+
 	// Portal Secret mapping check
 	home, _ := os.UserHomeDir()
 	userPortalConf := filepath.Join(home, ".config", "xdg-desktop-portal", "hyprland-portals.conf")

@@ -7,6 +7,9 @@
 # Path additions
 export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
 
+# GPG terminal integration for passphrase prompts
+export GPG_TTY=$(tty)
+
 # History Configuration
 HISTCONTROL=ignoreboth:erasedups
 HISTSIZE=10000

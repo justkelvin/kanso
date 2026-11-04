@@ -13,10 +13,12 @@ hyprpolkitagent
 xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
 
-# Credential store and secret service
+# Credential store, secrets, and encryption
 gnome-keyring
 libsecret
 seahorse
+gnupg
+pinentry
 
 # Selected applications and desktop surfaces.
 kitty
