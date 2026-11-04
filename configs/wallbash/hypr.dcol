@@ -1,0 +1,5 @@
+$HOME/.config/hypr/theme.conf|hyprctl reload
+general {
+    col.active_border = rgba(<wallbash_3xa8>ff) rgba(<wallbash_2xa8>ff) 45deg
+    col.inactive_border = rgba(<wallbash_pry1>cc) rgba(<wallbash_1xa2>cc) 45deg
+}
