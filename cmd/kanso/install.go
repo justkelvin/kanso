@@ -146,6 +146,7 @@ func runInstaller(dryRun bool) error {
 		{Key: "Compositor", Value: "Hyprland (Native Lua)"},
 		{Key: "Surfaces", Value: "Waybar, Kitty, Rofi, Mako"},
 		{Key: "Audio & Power", Value: "PipeWire, WirePlumber, Hypridle"},
+		{Key: "Security & Secrets", Value: "Polkit, GNOME Keyring (Secret Service)"},
 	}
 	if stepMap["binary"] {
 		summaryItems = append(summaryItems, KeyVal{Key: "CLI Binary", Value: "~/.local/bin/kanso"})
@@ -153,6 +154,11 @@ func runInstaller(dryRun bool) error {
 	summaryItems = append(summaryItems, KeyVal{Key: "State", Badge: BadgeGreen("READY")})
 	summaryCard := RenderCard("Installation summary", summaryItems)
 	fmt.Println(summaryCard)
+
+	// Check PAM configuration for GNOME Keyring auto-unlock
+	if !checkPamKeyringConfigured() {
+		printPamNotice()
+	}
 
 	// Offer to start Hyprland if in TTY
 	if !dryRun && os.Getenv("WAYLAND_DISPLAY") == "" && os.Getenv("DISPLAY") == "" {
@@ -289,6 +295,7 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		{filepath.Join(repoRoot, "configs", "kitty"), filepath.Join(configDir, "kitty")},
 		{filepath.Join(repoRoot, "configs", "rofi"), filepath.Join(configDir, "rofi")},
 		{filepath.Join(repoRoot, "configs", "mako"), filepath.Join(configDir, "mako")},
+		{filepath.Join(repoRoot, "configs", "xdg-desktop-portal"), filepath.Join(configDir, "xdg-desktop-portal")},
 	}
 
 	for _, target := range targets {
@@ -473,9 +480,14 @@ func filesHaveIdenticalContent(f1, f2 string) (bool, error) {
 	return bytes.Equal(b1, b2), nil
 }
 
-// Enable PipeWire and WirePlumber user services
+// Enable PipeWire, WirePlumber, and GNOME Keyring user services
 func enableUserServices(dryRun bool) error {
-	services := []string{"pipewire.service", "pipewire-pulse.service", "wireplumber.service"}
+	services := []string{
+		"pipewire.service",
+		"pipewire-pulse.service",
+		"wireplumber.service",
+		"gnome-keyring-daemon.socket",
+	}
 
 	if dryRun {
 		for _, svc := range services {
@@ -545,4 +557,26 @@ func installKansoBinary(repoRoot string, dryRun bool) error {
 	}
 
 	return nil
+}
+
+func checkPamKeyringConfigured() bool {
+	data, err := os.ReadFile("/etc/pam.d/login")
+	if err != nil {
+		return false
+	}
+	return strings.Contains(string(data), "pam_gnome_keyring.so")
+}
+
+func printPamNotice() {
+	noticeRows := []KeyVal{
+		{Key: "Feature", Value: "GNOME Keyring Auto-Unlock"},
+		{Key: "Target File", Value: "/etc/pam.d/login"},
+		{Key: "Action Needed", Badge: BadgeYellow("RECOMMENDED")},
+	}
+	card := RenderCard("Post-Install: PAM Keyring", noticeRows)
+	fmt.Println(card)
+	fmt.Printf("  %s %s\n", cCyan.Render("Note:"), cFg.Render("To auto-unlock your password keyring on TTY1 login without prompts,"))
+	fmt.Printf("        %s\n\n", cFg.Render("add these lines to /etc/pam.d/login (see README.md):"))
+	fmt.Printf("        %s\n", cMuted.Render("auth     optional  pam_gnome_keyring.so"))
+	fmt.Printf("        %s\n\n", cMuted.Render("session  optional  pam_gnome_keyring.so auto_start"))
 }

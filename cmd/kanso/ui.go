@@ -23,6 +23,7 @@ var (
 	cError   = lipgloss.NewStyle().Foreground(colorRed).Bold(true)
 	cMuted   = lipgloss.NewStyle().Foreground(colorMuted)
 	cCyan    = lipgloss.NewStyle().Foreground(colorCyan)
+	cFg      = lipgloss.NewStyle().Foreground(colorFg)
 
 	// Uniform width for all Daytona-style cards
 	cardWidth = 70

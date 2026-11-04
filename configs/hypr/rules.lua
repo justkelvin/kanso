@@ -8,6 +8,8 @@ hl.config({
         -- Security, Password Managers & Auth
         "float, class:^(Bitwarden)$",
         "float, class:^(org\\.keepassxc\\.KeePassXC)$",
+        "float, class:^(seahorse)$",
+        "float, class:^(gcr-prompter)$",
         "float, class:^(hyprpolkitagent)$",
         "float, class:^(pinentry-.*)$",
 

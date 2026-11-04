@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -63,9 +64,10 @@ var doctorCmd = &cobra.Command{
 		}
 		fmt.Println()
 
-		// 3. Portals and Polkit
-		fmt.Println(cMuted.Render("  SESSION INTEGRATION"))
+		// 3. Portals, Polkit & Secrets
+		fmt.Println(cMuted.Render("  SESSION INTEGRATION & SECRETS"))
 		checkPortalAndPolkit(&issues)
+		checkCredentialStore(&issues)
 		fmt.Println()
 
 		// 4. User Group Permissions
@@ -130,6 +132,45 @@ func checkPortalAndPolkit(issues *int) {
 	} else {
 		RenderCheckItem(false, "xdg-desktop-portal-hyprland", "missing portal backend")
 		*issues++
+	}
+}
+
+func checkCredentialStore(issues *int) {
+	if _, err := exec.LookPath("gnome-keyring-daemon"); err == nil {
+		RenderCheckItem(true, "gnome-keyring", "Secret Service provider (org.freedesktop.secrets)")
+	} else {
+		RenderCheckItem(false, "gnome-keyring", "missing package (Chrome/VS Code password storage)")
+		*issues++
+	}
+
+	if _, err := exec.LookPath("secret-tool"); err == nil {
+		RenderCheckItem(true, "libsecret", "CLI and client library for secrets")
+	} else {
+		RenderCheckItem(false, "libsecret", "missing libsecret package (secret-tool)")
+		*issues++
+	}
+
+	// Portal Secret mapping check
+	home, _ := os.UserHomeDir()
+	userPortalConf := filepath.Join(home, ".config", "xdg-desktop-portal", "hyprland-portals.conf")
+	if data, err := os.ReadFile(userPortalConf); err == nil && strings.Contains(string(data), "Secret=gnome-keyring") {
+		RenderCheckItem(true, "portal secret routing", "hyprland-portals.conf maps Secret to gnome-keyring")
+	} else if data, err := os.ReadFile("/etc/xdg/xdg-desktop-portal/hyprland-portals.conf"); err == nil && strings.Contains(string(data), "Secret=gnome-keyring") {
+		RenderCheckItem(true, "portal secret routing", "system hyprland-portals.conf maps Secret to gnome-keyring")
+	} else {
+		RenderCheckItem(false, "portal secret routing", "missing Secret=gnome-keyring in hyprland-portals.conf")
+		*issues++
+	}
+
+	// PAM login auto-unlock check
+	if data, err := os.ReadFile("/etc/pam.d/login"); err == nil {
+		if strings.Contains(string(data), "pam_gnome_keyring.so") {
+			RenderCheckItem(true, "PAM auto-unlock", "keyring auto-unlocks on TTY1 login")
+		} else {
+			RenderCheckItem(false, "PAM auto-unlock", "add pam_gnome_keyring.so to /etc/pam.d/login")
+		}
+	} else {
+		RenderCheckItem(false, "PAM auto-unlock", "unable to read /etc/pam.d/login")
 	}
 }
 

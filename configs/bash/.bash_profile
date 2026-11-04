@@ -31,6 +31,11 @@ export EDITOR=nano
 export VISUAL=nano
 export TERMINAL=kitty
 
+# Credential store & SSH agent integration (if GNOME Keyring SSH socket is active)
+if [ -z "$SSH_AUTH_SOCK" ] && [ -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/gcr/ssh" ]; then
+    export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/gcr/ssh"
+fi
+
 # 3. Autostart Hyprland on tty1 login using the official start-hyprland wrapper
 # Boots directly into Hyprland without requiring a display manager.
 if [ -z "$DISPLAY" ] && [ "$XDG_VTNR" = "1" ]; then
