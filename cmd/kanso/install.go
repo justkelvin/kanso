@@ -144,7 +144,7 @@ func runInstaller(dryRun bool) error {
 	// Finish Summary Card
 	summaryItems := []KeyVal{
 		{Key: "Compositor", Value: "Hyprland (Native Lua)"},
-		{Key: "Surfaces", Value: "Waybar, Kitty, Rofi, Mako"},
+		{Key: "Surfaces & Apps", Value: "Waybar, Kitty, Rofi, Mako, Dolphin, Satty"},
 		{Key: "Audio & Power", Value: "PipeWire, WirePlumber, Hypridle"},
 		{Key: "Security & Secrets", Value: "Polkit, GNOME Keyring (Secret Service)"},
 	}
@@ -295,6 +295,7 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		{filepath.Join(repoRoot, "configs", "kitty"), filepath.Join(configDir, "kitty")},
 		{filepath.Join(repoRoot, "configs", "rofi"), filepath.Join(configDir, "rofi")},
 		{filepath.Join(repoRoot, "configs", "mako"), filepath.Join(configDir, "mako")},
+		{filepath.Join(repoRoot, "configs", "satty"), filepath.Join(configDir, "satty")},
 		{filepath.Join(repoRoot, "configs", "xdg-desktop-portal"), filepath.Join(configDir, "xdg-desktop-portal")},
 	}
 
@@ -302,6 +303,30 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		if err := copyDirectoryWithBackup(target.src, target.dst, backupDir, backedUpCount, dryRun); err != nil {
 			return err
 		}
+	}
+
+	// Target standalone application config files in ~/.config/
+	configFiles := []struct {
+		src string
+		dst string
+	}{
+		{filepath.Join(repoRoot, "configs", "dolphin", "dolphinrc"), filepath.Join(configDir, "dolphinrc")},
+		{filepath.Join(repoRoot, "configs", "kde", "kdeglobals"), filepath.Join(configDir, "kdeglobals")},
+		{filepath.Join(repoRoot, "configs", "electron", "electron-flags.conf"), filepath.Join(configDir, "electron-flags.conf")},
+		{filepath.Join(repoRoot, "configs", "electron", "code-flags.conf"), filepath.Join(configDir, "code-flags.conf")},
+	}
+
+	for _, file := range configFiles {
+		if _, err := os.Stat(file.src); err == nil {
+			if err := safeCopyFile(file.src, file.dst, backupDir, backedUpCount, dryRun); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Ensure standard screenshot directory exists
+	if !dryRun {
+		_ = os.MkdirAll(filepath.Join(home, "Pictures", "Screenshots"), 0755)
 	}
 
 	// Deploy default wallpaper to ~/.config/hypr/wallpapers/blue_distortion.png

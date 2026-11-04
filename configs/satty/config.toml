@@ -1,0 +1,28 @@
+# Satty Screenshot Annotator Configuration
+# Tokyo Night theme styling, Wayland floating, and early exit
+
+[general]
+title = "Satty"
+app-id = "com.gabm.satty"
+fullscreen = false
+floating-hack = true
+default-hide-toolbars = false
+no-window-decoration = false
+early-exit = ["all"]
+initial-tool = "rectangle"
+copy-command = "wl-copy"
+output-filename = "~/Pictures/Screenshots/%Y-%m-%d_%H-%M-%S_screenshot.png"
+annotation-size-factor = 1.0
+corner-roundness = 8
+disable-notifications = false
+
+[color-palette]
+# Tokyo Night color accents for quick toolbar selection (RRGGBBAA)
+palette = [
+    "#7aa2f7ff",
+    "#f7768eff",
+    "#9ece6aff",
+    "#e0af68ff",
+    "#bb9af7ff",
+    "#1a1b26ff",
+]

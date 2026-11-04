@@ -137,14 +137,24 @@ kanso/
 ├── cmd/
 │   └── kanso/       # Go CLI entrypoint and commands
 ├── configs/
-│   └── hypr/        # Modular Lua configurations for Hyprland
-│       ├── hyprland.lua  # Master entrypoint
-│       ├── monitors.lua  # Display outputs & scaling
-│       ├── autostart.lua # Desktop services & daemons
-│       ├── input.lua     # Keyboard, touchpad & gestures
-│       ├── keybinds.lua  # Keybindings and application dispatchers
-│       ├── look.lua      # Layout, gaps, borders & animations
-│       └── rules.lua     # Window rules and workspace assignments
+│   ├── bash/        # Login profile and shell environment (.bashrc, .bash_profile)
+│   ├── dolphin/     # Minimal Dolphin file manager configuration (dolphinrc)
+│   ├── electron/    # Wayland runtime flags for Electron and VS Code
+│   ├── hypr/        # Modular Lua configurations for Hyprland
+│   │   ├── hyprland.lua  # Master entrypoint
+│   │   ├── monitors.lua  # Display outputs & scaling
+│   │   ├── autostart.lua # Desktop services & daemons
+│   │   ├── input.lua     # Keyboard, touchpad & gestures
+│   │   ├── keybinds.lua  # Keybindings and application dispatchers
+│   │   ├── look.lua      # Layout, gaps, borders & animations
+│   │   └── rules.lua     # Window rules and workspace assignments
+│   ├── kde/         # Tokyo Night color scheme and Qt globals (kdeglobals)
+│   ├── kitty/       # Terminal emulator styling and Tokyo Night theme
+│   ├── mako/        # Notification daemon styling
+│   ├── rofi/        # Tokyo Night application launcher & wallpaper grid
+│   ├── satty/       # Wayland screenshot annotator config (config.toml)
+│   ├── waybar/      # Status bar modules and styling
+│   └── xdg-desktop-portal/ # Portal routing overrides (hyprland-portals.conf)
 ├── packages/
 │   ├── arch.txt     # Official repository dependencies
 │   ├── aur.txt      # AUR packages (via yay)

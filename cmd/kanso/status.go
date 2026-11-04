@@ -105,6 +105,11 @@ var statusCmd = &cobra.Command{
 			{"Kitty Config", filepath.Join(home, ".config", "kitty", "kitty.conf")},
 			{"Rofi Config", filepath.Join(home, ".config", "rofi", "config.rasi")},
 			{"Mako Config", filepath.Join(home, ".config", "mako", "config")},
+			{"Dolphin Config", filepath.Join(home, ".config", "dolphinrc")},
+			{"KDE Globals", filepath.Join(home, ".config", "kdeglobals")},
+			{"Satty Config", filepath.Join(home, ".config", "satty", "config.toml")},
+			{"Electron Flags", filepath.Join(home, ".config", "electron-flags.conf")},
+			{"Portal Config", filepath.Join(home, ".config", "xdg-desktop-portal", "hyprland-portals.conf")},
 		}
 
 		deployedCount := 0
@@ -130,7 +135,7 @@ var statusCmd = &cobra.Command{
 		fmt.Println(configCard)
 
 		// 3. User Services Card
-		services := []string{"pipewire.service", "wireplumber.service", "hyprpolkitagent.service"}
+		services := []string{"pipewire.service", "wireplumber.service", "hyprpolkitagent.service", "gnome-keyring-daemon.socket"}
 		var serviceRows []KeyVal
 		for _, svc := range services {
 			out, err := exec.Command("systemctl", "--user", "is-active", svc).Output()
