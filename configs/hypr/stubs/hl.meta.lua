@@ -159,7 +159,6 @@ function hl.set_option(key, value) end
 ---@field monitor? string[] Display output rules
 ---@field windowrule? string[] Legacy window rules
 ---@field windowrulev2? string[] Modern window rules v2
----@field env? table<string, string> Environment variables
 
 ---@class hl.Config.General
 ---@field gaps_in? integer Inner gaps between windows

@@ -11,16 +11,8 @@ require("autostart")
 require("input")
 require("look")
 hl.config({
-    env = {
-        QT_STYLE_OVERRIDE = "kvantum",
-        QT_QPA_PLATFORM = "wayland;xcb",
-    },
     source = { hypr_dir .. "theme.conf" },
 })
-if hl.env then
-    hl.env("QT_STYLE_OVERRIDE", "kvantum")
-    hl.env("QT_QPA_PLATFORM", "wayland;xcb")
-end
 require("animations")
 require("keybinds")
 require("rules")

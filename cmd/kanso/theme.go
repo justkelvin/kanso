@@ -468,10 +468,7 @@ func resolveThemeWallpaper(themeDir string) string {
 }
 
 func applyWallbashFromWallpaper(imgPath, mode string) error {
-	repoRoot, err := findRepoRoot()
-	if err != nil {
-		return err
-	}
+	repoRoot, _ := findRepoRoot()
 
 	pal, err := ExtractPalette(imgPath, mode)
 	if err != nil {
@@ -487,11 +484,6 @@ func applyWallbashFromWallpaper(imgPath, mode string) error {
 
 func pickThemeRofi() error {
 	themes, err := listAvailableThemes()
-	if err != nil {
-		return err
-	}
-
-	repoRoot, err := findRepoRoot()
 	if err != nil {
 		return err
 	}
@@ -522,7 +514,13 @@ func pickThemeRofi() error {
 		}
 	}
 
-	rasiPath := filepath.Join(repoRoot, "configs", "rofi", "theme-picker.rasi")
+	rasiPath := filepath.Join(home, ".config", "rofi", "theme-picker.rasi")
+	if _, err := os.Stat(rasiPath); err != nil {
+		if repoRoot, repoErr := findRepoRoot(); repoErr == nil {
+			rasiPath = filepath.Join(repoRoot, "configs", "rofi", "theme-picker.rasi")
+		}
+	}
+
 	cmd := exec.Command("rofi", "-dmenu", "-theme", rasiPath, "-select", state.CurrentTheme)
 	cmd.Stdin = strings.NewReader(sb.String())
 
@@ -540,11 +538,7 @@ func pickThemeRofi() error {
 }
 
 func pickWallbashModeRofi() error {
-	repoRoot, err := findRepoRoot()
-	if err != nil {
-		return err
-	}
-
+	home, _ := os.UserHomeDir()
 	state := loadThemeState()
 	items := []string{
 		"theme  •  Preset design (locked)",
@@ -553,7 +547,13 @@ func pickWallbashModeRofi() error {
 		"light  •  Forced light wallpaper colors",
 	}
 
-	rasiPath := filepath.Join(repoRoot, "configs", "rofi", "wallbash-mode.rasi")
+	rasiPath := filepath.Join(home, ".config", "rofi", "wallbash-mode.rasi")
+	if _, err := os.Stat(rasiPath); err != nil {
+		if repoRoot, repoErr := findRepoRoot(); repoErr == nil {
+			rasiPath = filepath.Join(repoRoot, "configs", "rofi", "wallbash-mode.rasi")
+		}
+	}
+
 	cmd := exec.Command("rofi", "-dmenu", "-theme", rasiPath, "-selected-row", fmt.Sprintf("%d", state.WallbashMode))
 	cmd.Stdin = strings.NewReader(strings.Join(items, "\n"))
 

@@ -315,10 +315,12 @@ func ApplyWallbashTemplates(repoRoot string, pal *WallbashPalette) error {
 	home, _ := os.UserHomeDir()
 	configDir := filepath.Join(home, ".config")
 
-	// Template search directories: repo templates, then user overrides
+	// Template search directories: user installed templates, then repo templates
 	tplDirs := []string{
-		filepath.Join(repoRoot, "configs", "wallbash"),
 		filepath.Join(home, ".config", "kanso", "wallbash"),
+	}
+	if repoRoot != "" {
+		tplDirs = append(tplDirs, filepath.Join(repoRoot, "configs", "wallbash"))
 	}
 
 	// Build token lookup tables
