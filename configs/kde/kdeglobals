@@ -10,7 +10,7 @@ font=JetBrains Mono Nerd Font,10,-1,5,50,0,0,0,0,0
 fixed=JetBrains Mono Nerd Font,10,-1,5,50,0,0,0,0,0
 menuFont=Cantarell,10,-1,5,50,0,0,0,0,0
 toolBarFont=Cantarell,9,-1,5,50,0,0,0,0,0
-widgetStyle=Fusion
+widgetStyle=kvantum
 
 [KDE]
 ShowDeleteCommand=true

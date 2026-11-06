@@ -2,8 +2,8 @@
 
 hl.on("hyprland.start", function()
     -- Environment synchronization for D-Bus and systemd user services
-    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
-    hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
+    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_STYLE_OVERRIDE")
+    hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_STYLE_OVERRIDE")
 
     -- Official polkit authentication agent
     hl.exec_cmd("systemctl --user start hyprpolkitagent")

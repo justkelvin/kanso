@@ -299,6 +299,10 @@ func applyTheme(themeName string) error {
 			body := strings.Join(lines[1:], "\n")
 			_ = os.WriteFile(filepath.Join(kvantumDst, "wallbash.kvconfig"), []byte(body), 0644)
 		}
+
+		// Activate wallbash theme in Kvantum
+		kvMain := filepath.Join(home, ".config", "Kvantum", "kvantum.kvconfig")
+		_ = os.WriteFile(kvMain, []byte("[General]\ntheme=wallbash\n"), 0644)
 	}
 
 	// 3. Extract GTK and interface metadata from hypr.theme

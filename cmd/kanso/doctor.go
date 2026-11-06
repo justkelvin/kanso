@@ -52,6 +52,7 @@ var doctorCmd = &cobra.Command{
 			{"slurp", "Wayland region selector"},
 			{"wl-copy", "Wayland clipboard tool"},
 			{"cliphist", "Clipboard history manager"},
+			{"kvantummanager", "Qt SVG theme engine (kvantum)"},
 		}
 
 		for _, bin := range essentialBinaries {

@@ -117,6 +117,7 @@ var statusCmd = &cobra.Command{
 			{"Mako Config", filepath.Join(home, ".config", "mako", "config")},
 			{"Dolphin Config", filepath.Join(home, ".config", "dolphinrc")},
 			{"KDE Globals", filepath.Join(home, ".config", "kdeglobals")},
+			{"Kvantum Config", filepath.Join(home, ".config", "Kvantum", "kvantum.kvconfig")},
 			{"Satty Config", filepath.Join(home, ".config", "satty", "config.toml")},
 			{"Electron Flags", filepath.Join(home, ".config", "electron-flags.conf")},
 			{"Portal Config", filepath.Join(home, ".config", "xdg-desktop-portal", "hyprland-portals.conf")},

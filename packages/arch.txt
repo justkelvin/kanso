@@ -59,6 +59,7 @@ blueman
 # Required GTK/Qt appearance integration.
 qt5-wayland
 qt6-wayland
+kvantum
 nwg-look
 adwaita-icon-theme
 

@@ -326,6 +326,16 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		}
 	}
 
+	// Ensure Kvantum configuration directory and active theme exist
+	if !dryRun {
+		kvDir := filepath.Join(configDir, "Kvantum")
+		_ = os.MkdirAll(kvDir, 0755)
+		kvFile := filepath.Join(kvDir, "kvantum.kvconfig")
+		if _, err := os.Stat(kvFile); os.IsNotExist(err) {
+			_ = os.WriteFile(kvFile, []byte("[General]\ntheme=wallbash\n"), 0644)
+		}
+	}
+
 	// Ensure standard screenshot directory exists
 	if !dryRun {
 		_ = os.MkdirAll(filepath.Join(home, "Pictures", "Screenshots"), 0755)
