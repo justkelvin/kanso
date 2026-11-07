@@ -17,11 +17,11 @@ chosen=$(echo -e "$options" | rofi -dmenu -i -p "Session" -lines 4 2>/dev/null)
 case "$chosen" in
     "$lock")
         if command -v hyprlock &>/dev/null; then
-            hyprlock
+            loginctl lock-session 2>/dev/null || hyprlock
         fi
         ;;
     "$logout")
-        hyprctl dispatch exit
+        hyprctl dispatch 'hl.dsp.exit()' 2>/dev/null || hyprctl dispatch exit 2>/dev/null || loginctl terminate-session "${XDG_SESSION_ID:-}" 2>/dev/null || pkill -x Hyprland
         ;;
     "$reboot")
         systemctl reboot
