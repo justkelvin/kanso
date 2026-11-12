@@ -7,7 +7,6 @@ configuration {
     modi: "drun,run";
     font: "JetBrainsMono Nerd Font 11";
     show-icons: true;
-    icon-theme: "Adwaita";
     display-drun: "󰍉 ";
     display-run: " ";
     drun-display-format: "{name}";

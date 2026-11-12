@@ -10,9 +10,12 @@ require("monitors")
 require("autostart")
 require("input")
 require("look")
-hl.config({
-    source = { hypr_dir .. "theme.conf" },
-})
+-- Load theme configuration directly in Lua
+package.loaded["theme"] = nil
+local ok, theme = pcall(require, "theme")
+if ok and type(theme) == "table" then
+    hl.config(theme)
+end
 require("animations")
 require("keybinds")
 require("rules")

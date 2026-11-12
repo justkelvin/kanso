@@ -2,8 +2,6 @@
 # Configures Qt apps (including Dolphin) with Tokyo Night palette and Kitty terminal binding
 
 [General]
-ColorScheme=TokyoNight
-Name=Tokyo Night
 TerminalApplication=kitty
 TerminalService=kitty.desktop
 font=JetBrains Mono Nerd Font,10,-1,5,50,0,0,0,0,0
@@ -12,12 +10,16 @@ menuFont=Cantarell,10,-1,5,50,0,0,0,0,0
 toolBarFont=Cantarell,9,-1,5,50,0,0,0,0,0
 widgetStyle=kvantum
 
+[UiSettings]
+ColorScheme=colors
+
 [KDE]
 ShowDeleteCommand=true
 SingleClick=false
+widgetStyle=kvantum
 
 [Icons]
-Theme=Adwaita
+Theme=MacTahoe-dark
 
 [Colors:View]
 BackgroundAlternate=36,40,59

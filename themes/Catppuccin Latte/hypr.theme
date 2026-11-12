@@ -2,7 +2,7 @@ $HOME/.config/hypr/theme.conf|hyprctl reload
 # // P̳r̳a̳s̳a̳n̳t̳h̳ R̳a̳n̳g̳a̳n̳
 
 $GTK_THEME = Catppuccin-Latte
-$ICON_THEME = Colloid-Catppuccin-Light
+$ICON_THEME = Colloid-Light
 $CURSOR_THEME = Bibata-Modern-Ice
 $CURSOR_SIZE = 24
 $COLOR_SCHEME = prefer-light

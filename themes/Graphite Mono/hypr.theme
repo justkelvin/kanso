@@ -2,7 +2,7 @@ $HOME/.config/hypr/theme.conf|hyprctl reload
 #  P̳r̳a̳s̳a̳n̳t̳h̳ R̳a̳n̳g̳a̳n̳
 
 $GTK_THEME = Graphite-Mono
-$ICON_THEME = MacTahoe-grey-dark
+$ICON_THEME = MacTahoe-dark
 $CURSOR_THEME = MacTahoe-dark-cursors
 $CURSOR_SIZE = 24
 $COLOR_SCHEME = prefer-dark

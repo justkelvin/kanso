@@ -4,12 +4,12 @@ TerminalApplication=kitty
 TerminalService=kitty.desktop
 widgetStyle=kvantum
 
+[UiSettings]
+ColorScheme=colors
+
 [KDE]
 ShowDeleteCommand=true
 SingleClick=false
-
-[Icons]
-Theme=Adwaita
 
 [Colors:Window]
 BackgroundNormal=<wallbash_pry1_rgb>

@@ -308,10 +308,12 @@ func applyTheme(themeName string) error {
 		_ = os.WriteFile(kvMain, []byte("[General]\ntheme=wallbash\n"), 0644)
 	}
 
-	// 3. Extract GTK and interface metadata from hypr.theme
-	hyprThemeFile := filepath.Join(themeDir, "hypr.theme")
-	if data, err := os.ReadFile(hyprThemeFile); err == nil {
-		applyInterfaceMetadata(string(data))
+	// Deploy native Lua Hyprland theme if present
+	themeLuaSrc := filepath.Join(themeDir, "theme.lua")
+	if _, err := os.Stat(themeLuaSrc); err == nil {
+		hyprDst := filepath.Join(home, ".config", "hypr", "theme.lua")
+		_ = copyFile(themeLuaSrc, hyprDst)
+		_ = exec.Command("hyprctl", "reload").Run()
 	}
 
 	// 4. Resolve and set default theme wallpaper
@@ -333,6 +335,12 @@ func applyTheme(themeName string) error {
 				_ = ApplyWallbashTemplates(repoRoot, pal)
 			}
 		}
+	}
+
+	// 6. Extract GTK and interface metadata from hypr.theme (ensures rofi & kdeglobals retain icon & font contrast)
+	hyprThemeFile := filepath.Join(themeDir, "hypr.theme")
+	if data, err := os.ReadFile(hyprThemeFile); err == nil {
+		applyInterfaceMetadata(string(data))
 	}
 
 	saveThemeState(state)
@@ -488,15 +496,47 @@ func applyInterfaceMetadata(hyprThemeContent string) {
 
 	// 7. KDE Globals (~/.config/kdeglobals)
 	kdeGlobalsPath := filepath.Join(configDir, "kdeglobals")
-	updateKdeGlobals(kdeGlobalsPath, iconTheme)
+	updateKdeGlobals(kdeGlobalsPath, iconTheme, colorScheme)
+
+	// 8. Update Rofi Theme with active Icon Theme
+	if iconTheme != "" {
+		rofiThemePath := filepath.Join(configDir, "rofi", "theme.rasi")
+		if data, err := os.ReadFile(rofiThemePath); err == nil {
+			rContent := string(data)
+			reRofiIcon := regexp.MustCompile(`(?s)configuration\s*\{[^}]*icon-theme:[^}]*\}`)
+			newCfg := fmt.Sprintf("configuration {\n    icon-theme: \"%s\";\n}", iconTheme)
+			if reRofiIcon.MatchString(rContent) {
+				rContent = reRofiIcon.ReplaceAllString(rContent, newCfg)
+			} else {
+				rContent = newCfg + "\n\n" + rContent
+			}
+			_ = os.WriteFile(rofiThemePath, []byte(rContent), 0644)
+		}
+	}
+
+	// 9. Reload Waybar to pick up new GTK icon and theme settings
+	_ = exec.Command("pkill", "-SIGUSR2", "waybar").Run()
 }
 
-func updateKdeGlobals(filePath, iconTheme string) {
+func copyFile(src, dst string) error {
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	_ = os.MkdirAll(filepath.Dir(dst), 0755)
+	return os.WriteFile(dst, data, 0644)
+}
+
+func updateKdeGlobals(filePath, iconTheme, colorScheme string) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return
 	}
 	content := string(data)
+
+	// Remove any hardcoded ColorScheme under [General] so Qt/KDE doesn't fail looking for missing .colors files
+	reGeneralScheme := regexp.MustCompile(`(?m)^ColorScheme=.*$`)
+	content = reGeneralScheme.ReplaceAllString(content, "")
 
 	if iconTheme != "" {
 		reIcon := regexp.MustCompile(`(?m)^Theme=.*$`)
@@ -518,6 +558,27 @@ func updateKdeGlobals(filePath, iconTheme string) {
 			content += "\n[KDE]\nwidgetStyle=kvantum\n"
 		}
 	}
+
+	if !strings.Contains(content, "[UiSettings]") {
+		content += "\n[UiSettings]\nColorScheme=colors\n"
+	} else if !strings.Contains(content, "ColorScheme=colors") {
+		content = strings.Replace(content, "[UiSettings]", "[UiSettings]\nColorScheme=colors", 1)
+	}
+
+	// Update text and background contrast for Qt apps (Dolphin, etc.)
+	var fgNormal, bgNormal string
+	if colorScheme == "prefer-light" {
+		fgNormal = "25,25,25"
+		bgNormal = "255,255,255"
+	} else {
+		fgNormal = "255,255,255"
+		bgNormal = "25,25,25"
+	}
+
+	reFg := regexp.MustCompile(`(?m)^ForegroundNormal=.*$`)
+	reBg := regexp.MustCompile(`(?m)^BackgroundNormal=.*$`)
+	content = reFg.ReplaceAllString(content, "ForegroundNormal="+fgNormal)
+	content = reBg.ReplaceAllString(content, "BackgroundNormal="+bgNormal)
 
 	_ = os.WriteFile(filePath, []byte(content), 0644)
 }
@@ -553,7 +614,7 @@ func ensureThemeAssets(repoRoot string) error {
 		checkEntry string
 	}{
 		{"gtk-themes.tar.xz", themesDst, "Graphite-Mono"},
-		{"icon-themes.tar.xz", iconsDst, "Colloid-Catppuccin-Dark"},
+		{"icon-themes.tar.xz", iconsDst, "MacTahoe-dark"},
 		{"bibata-cursors.tar.xz", iconsDst, "Bibata-Modern-Classic"},
 		{"mactahoe-cursors.tar.xz", iconsDst, "MacTahoe-dark-cursors"},
 	}
