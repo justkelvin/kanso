@@ -1,56 +1,55 @@
--- Window Rules: Set floating state for dialogs, audio mixer, system utilities, and popups
+-- Kanso Hyprland Window Rules
+-- Native Lua window_rule declarations for Hyprland 0.57+
 
-hl.config({
-    windowrulev2 = {
-        -- Global Safety: prevent windows from requesting maximize
-        "suppressevent maximize, class:.*",
-
-        -- Security, Password Managers & Auth
-        "float, class:^(Bitwarden)$",
-        "float, class:^(org\\.keepassxc\\.KeePassXC)$",
-        "float, class:^(seahorse)$",
-        "float, class:^(gcr-prompter)$",
-        "float, class:^(hyprpolkitagent)$",
-        "float, class:^(pinentry-.*)$",
-
-        -- Audio, Bluetooth & Network System Controls
-        "float, class:^(blueman-manager)$",
-        "float, class:^(pavucontrol(-qt)?|org\\.pulseaudio\\.pavucontrol)$",
-        "float, class:^(nm-(applet|connection-editor))$",
-
-        -- Desktop Portals & Screen Share Pickers
-        "float, class:^(hyprland-share-picker)$",
-        "float, class:^([Xx]dg-desktop-portal-gtk)$",
-        "float, class:^(org\\.freedesktop\\.impl\\.portal\\.desktop\\.(hyprland|gtk))$",
-
-        -- Theme & Display Configuration
-        "float, class:^(kvantummanager)$",
-        "float, class:^(qt[56]ct)$",
-        "float, class:^(nwg-(look|displays))$",
-
-        -- Screenshot Annotation & Archive Utilities
-        "float, class:^(com\\.gabm\\.satty)$",
-        "float, class:^(org\\.kde\\.ark)$",
-
-        -- Generic Dialog Classes
-        "float, class:^(.*dialog.*)$",
-
-        -- File Choosers, Action Dialogs & Prompts (Float + Centered)
-        "float, center, title:^(Open File|Save As.*|Choose Files|File Upload.*|Confirm to replace files|File Already Exists.*|Authentication Required)$",
-        "float, center, title:^(Progress Dialog.*|Copying.*|File Operation Progress|Add Folder to Workspace|Choose wallpaper.*|Library.*|Volume Control)$",
-        "float, center, title:^(.*dialog.*)$",
-
-        -- Picture-in-Picture (Float, Pin, Bottom-Right, 25% Monitor Size)
-        "float, title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture.*)$",
-        "pin, title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture.*)$",
-        "size (monitor_w*0.25) (monitor_h*0.25), title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture.*)$",
-        "move (monitor_w*0.73) (monitor_h*0.72), title:^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture.*)$",
-
-        -- XWayland Video Bridge (Screen Sharing helper — hidden 1x1 buffer)
-        "opacity 0.0 override, class:^(xwaylandvideobridge)$",
-        "noanim, class:^(xwaylandvideobridge)$",
-        "noinitialfocus, class:^(xwaylandvideobridge)$",
-        "maxsize 1 1, class:^(xwaylandvideobridge)$",
-        "noblur, class:^(xwaylandvideobridge)$",
+-- 1. Floating Utility Classes (Audio Mixer, Network, Bluetooth, Auth, Theme Managers, Dialogs)
+hl.window_rule({
+    name = "kanso_floating_classes",
+    match = {
+        class = "^(pavucontrol(-qt)?|org\\.pulseaudio\\.pavucontrol|nm-(applet|connection-editor)|blueman-manager|Bitwarden|org\\.keepassxc\\.KeePassXC|seahorse|gcr-prompter|hyprpolkitagent|pinentry-.*|hyprland-share-picker|[Xx]dg-desktop-portal-gtk|org\\.freedesktop\\.impl\\.portal\\.desktop\\.(hyprland|gtk)|kvantummanager|qt[56]ct|nwg-(look|displays)|com\\.gabm\\.satty|org\\.kde\\.ark|.*dialog.*)$",
     },
+    float = true,
+})
+
+-- 2. Floating & Centered Action Modals & File Choosers
+hl.window_rule({
+    name = "kanso_floating_titles",
+    match = {
+        title = "^(Open File|Save As.*|Choose Files|File Upload.*|Confirm to replace files|File Already Exists.*|Authentication Required|Progress Dialog.*|Copying.*|File Operation Progress|Add Folder to Workspace|Choose wallpaper.*|Library.*|Volume Control|.*dialog.*)$",
+    },
+    float = true,
+    center = true,
+})
+
+-- 3. Picture-in-Picture (Float, Pin, Bottom-Right)
+hl.window_rule({
+    name = "kanso_pip",
+    match = {
+        title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture.*)$",
+    },
+    float = true,
+    pin = true,
+    size = "(monitor_w*0.25) (monitor_h*0.25)",
+    move = "(monitor_w*0.73) (monitor_h*0.72)",
+})
+
+-- 4. XWayland Video Bridge (Screen Sharing helper — hidden 1x1 buffer)
+hl.window_rule({
+    name = "kanso_xwayland_video_bridge",
+    match = {
+        class = "xwaylandvideobridge",
+    },
+    no_initial_focus = true,
+    no_anim = true,
+    no_blur = true,
+    max_size = { 1, 1 },
+    opacity = 0.0,
+})
+
+-- 5. Global suppression of maximize requests
+hl.window_rule({
+    name = "kanso_suppress_maximize",
+    match = {
+        class = ".*",
+    },
+    suppress_event = "maximize",
 })

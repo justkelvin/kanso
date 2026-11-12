@@ -299,6 +299,7 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		{filepath.Join(repoRoot, "configs", "xdg-desktop-portal"), filepath.Join(configDir, "xdg-desktop-portal")},
 		{filepath.Join(repoRoot, "configs", "wallbash"), filepath.Join(home, ".config", "kanso", "wallbash")},
 		{filepath.Join(repoRoot, "themes"), filepath.Join(home, ".config", "kanso", "themes")},
+		{filepath.Join(repoRoot, "assets", "arcs"), filepath.Join(home, ".config", "kanso", "arcs")},
 	}
 
 	for _, target := range targets {
@@ -313,6 +314,7 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		dst string
 	}{
 		{filepath.Join(repoRoot, "configs", "dolphin", "dolphinrc"), filepath.Join(configDir, "dolphinrc")},
+		{filepath.Join(repoRoot, "configs", "dolphin", "dolphinui.rc"), filepath.Join(home, ".local", "share", "kxmlgui5", "dolphin", "dolphinui.rc")},
 		{filepath.Join(repoRoot, "configs", "kde", "kdeglobals"), filepath.Join(configDir, "kdeglobals")},
 		{filepath.Join(repoRoot, "configs", "electron", "electron-flags.conf"), filepath.Join(configDir, "electron-flags.conf")},
 		{filepath.Join(repoRoot, "configs", "electron", "code-flags.conf"), filepath.Join(configDir, "code-flags.conf")},
@@ -339,6 +341,7 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 	// Ensure standard screenshot directory exists
 	if !dryRun {
 		_ = os.MkdirAll(filepath.Join(home, "Pictures", "Screenshots"), 0755)
+		_ = ensureThemeAssets(repoRoot)
 	}
 
 	// Deploy default wallpaper to ~/.config/hypr/wallpapers/blue_distortion.png

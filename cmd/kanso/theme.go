@@ -276,6 +276,9 @@ func applyTheme(themeName string) error {
 	state := loadThemeState()
 	state.CurrentTheme = themeName
 
+	// 0. Ensure GTK themes, icons, and cursors are deployed to ~/.local/share/
+	_ = ensureThemeAssets(repoRoot)
+
 	// 1. Process theme design files (.theme)
 	themeFiles, _ := filepath.Glob(filepath.Join(themeDir, "*.theme"))
 	for _, tf := range themeFiles {
@@ -394,7 +397,8 @@ func applyInterfaceMetadata(hyprThemeContent string) {
 	re := regexp.MustCompile(`\$([A-Z_]+)\s*=\s*([^\n\r]+)`)
 	matches := re.FindAllStringSubmatch(hyprThemeContent, -1)
 
-	var gtkTheme, iconTheme, cursorTheme, colorScheme string
+	var gtkTheme, iconTheme, cursorTheme, cursorSize, colorScheme string
+	cursorSize = "24"
 	for _, m := range matches {
 		key := m[1]
 		val := strings.TrimSpace(m[2])
@@ -405,11 +409,17 @@ func applyInterfaceMetadata(hyprThemeContent string) {
 			iconTheme = val
 		case "CURSOR_THEME":
 			cursorTheme = val
+		case "CURSOR_SIZE":
+			cursorSize = val
 		case "COLOR_SCHEME":
 			colorScheme = val
 		}
 	}
 
+	home, _ := os.UserHomeDir()
+	configDir := filepath.Join(home, ".config")
+
+	// 1. GNOME Desktop Interface via gsettings
 	if gtkTheme != "" {
 		_ = exec.Command("gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", gtkTheme).Run()
 	}
@@ -418,10 +428,152 @@ func applyInterfaceMetadata(hyprThemeContent string) {
 	}
 	if cursorTheme != "" {
 		_ = exec.Command("gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", cursorTheme).Run()
+		_ = exec.Command("gsettings", "set", "org.gnome.desktop.interface", "cursor-size", cursorSize).Run()
 	}
 	if colorScheme != "" {
 		_ = exec.Command("gsettings", "set", "org.gnome.desktop.interface", "color-scheme", colorScheme).Run()
 	}
+
+	// 2. GTK-3.0 Configuration (~/.config/gtk-3.0/settings.ini)
+	gtk3Dir := filepath.Join(configDir, "gtk-3.0")
+	_ = os.MkdirAll(gtk3Dir, 0755)
+	gtk3Settings := fmt.Sprintf("[Settings]\ngtk-theme-name=%s\ngtk-icon-theme-name=%s\ngtk-cursor-theme-name=%s\ngtk-cursor-theme-size=%s\ngtk-font-name=Cantarell 10\n",
+		gtkTheme, iconTheme, cursorTheme, cursorSize)
+	_ = os.WriteFile(filepath.Join(gtk3Dir, "settings.ini"), []byte(gtk3Settings), 0644)
+
+	// 3. GTK-2.0 Configuration (~/.gtkrc-2.0)
+	gtk2Settings := fmt.Sprintf("gtk-theme-name=\"%s\"\ngtk-icon-theme-name=\"%s\"\ngtk-cursor-theme-name=\"%s\"\ngtk-cursor-theme-size=%s\ngtk-font-name=\"Cantarell 10\"\n",
+		gtkTheme, iconTheme, cursorTheme, cursorSize)
+	_ = os.WriteFile(filepath.Join(home, ".gtkrc-2.0"), []byte(gtk2Settings), 0644)
+
+	// 4. GTK-4.0 Symlink and ~/.themes legacy compatibility link
+	if gtkTheme != "" {
+		themeBaseDir := filepath.Join(home, ".local", "share", "themes", gtkTheme)
+		gtk4Src := filepath.Join(themeBaseDir, "gtk-4.0")
+		gtk4Dst := filepath.Join(configDir, "gtk-4.0")
+
+		if info, err := os.Stat(gtk4Src); err == nil && info.IsDir() {
+			_ = os.Remove(gtk4Dst)
+			_ = os.Symlink(gtk4Src, gtk4Dst)
+		}
+
+		legacyThemesDir := filepath.Join(home, ".themes")
+		_ = os.MkdirAll(legacyThemesDir, 0755)
+		legacyLink := filepath.Join(legacyThemesDir, gtkTheme)
+		_ = os.Remove(legacyLink)
+		_ = os.Symlink(themeBaseDir, legacyLink)
+	}
+
+	// 5. xsettingsd Configuration (~/.config/xsettingsd/xsettingsd.conf)
+	xsettingsDir := filepath.Join(configDir, "xsettingsd")
+	_ = os.MkdirAll(xsettingsDir, 0755)
+	xsettingsContent := fmt.Sprintf("Net/ThemeName \"%s\"\nNet/IconThemeName \"%s\"\nGtk/CursorThemeName \"%s\"\nGtk/CursorThemeSize %s\n",
+		gtkTheme, iconTheme, cursorTheme, cursorSize)
+	_ = os.WriteFile(filepath.Join(xsettingsDir, "xsettingsd.conf"), []byte(xsettingsContent), 0644)
+	_ = exec.Command("pkill", "-HUP", "xsettingsd").Run()
+
+	// 6. Default Cursor Theme for X11 & Wayland fallback
+	if cursorTheme != "" {
+		cursorDefault := fmt.Sprintf("[Icon Theme]\nName=Default\nComment=Default Cursor Theme\nInherits=%s\n", cursorTheme)
+		dotIconsDefault := filepath.Join(home, ".icons", "default")
+		_ = os.MkdirAll(dotIconsDefault, 0755)
+		_ = os.WriteFile(filepath.Join(dotIconsDefault, "index.theme"), []byte(cursorDefault), 0644)
+
+		localIconsDefault := filepath.Join(home, ".local", "share", "icons", "default")
+		_ = os.MkdirAll(localIconsDefault, 0755)
+		_ = os.WriteFile(filepath.Join(localIconsDefault, "index.theme"), []byte(cursorDefault), 0644)
+
+		_ = exec.Command("hyprctl", "setcursor", cursorTheme, cursorSize).Run()
+	}
+
+	// 7. KDE Globals (~/.config/kdeglobals)
+	kdeGlobalsPath := filepath.Join(configDir, "kdeglobals")
+	updateKdeGlobals(kdeGlobalsPath, iconTheme)
+}
+
+func updateKdeGlobals(filePath, iconTheme string) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return
+	}
+	content := string(data)
+
+	if iconTheme != "" {
+		reIcon := regexp.MustCompile(`(?m)^Theme=.*$`)
+		if strings.Contains(content, "[Icons]") {
+			if reIcon.MatchString(content) {
+				content = reIcon.ReplaceAllString(content, "Theme="+iconTheme)
+			} else {
+				content = strings.Replace(content, "[Icons]", "[Icons]\nTheme="+iconTheme, 1)
+			}
+		} else {
+			content += fmt.Sprintf("\n[Icons]\nTheme=%s\n", iconTheme)
+		}
+	}
+
+	if !strings.Contains(content, "widgetStyle=kvantum") {
+		if strings.Contains(content, "[KDE]") {
+			content = strings.Replace(content, "[KDE]", "[KDE]\nwidgetStyle=kvantum", 1)
+		} else {
+			content += "\n[KDE]\nwidgetStyle=kvantum\n"
+		}
+	}
+
+	_ = os.WriteFile(filePath, []byte(content), 0644)
+}
+
+func ensureThemeAssets(repoRoot string) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	themesDst := filepath.Join(home, ".local", "share", "themes")
+	iconsDst := filepath.Join(home, ".local", "share", "icons")
+	_ = os.MkdirAll(themesDst, 0755)
+	_ = os.MkdirAll(iconsDst, 0755)
+
+	var arcsDir string
+	if repoRoot != "" {
+		arcsDir = filepath.Join(repoRoot, "assets", "arcs")
+	}
+	if arcsDir == "" || !dirExists(arcsDir) {
+		kansoArcs := filepath.Join(home, ".config", "kanso", "arcs")
+		if dirExists(kansoArcs) {
+			arcsDir = kansoArcs
+		}
+	}
+	if arcsDir == "" || !dirExists(arcsDir) {
+		return nil
+	}
+
+	archives := []struct {
+		file       string
+		dst        string
+		checkEntry string
+	}{
+		{"gtk-themes.tar.xz", themesDst, "Graphite-Mono"},
+		{"icon-themes.tar.xz", iconsDst, "Colloid-Catppuccin-Dark"},
+		{"bibata-cursors.tar.xz", iconsDst, "Bibata-Modern-Classic"},
+		{"mactahoe-cursors.tar.xz", iconsDst, "MacTahoe-dark-cursors"},
+	}
+
+	for _, a := range archives {
+		srcPath := filepath.Join(arcsDir, a.file)
+		checkPath := filepath.Join(a.dst, a.checkEntry)
+		if _, err := os.Stat(checkPath); os.IsNotExist(err) {
+			if _, err := os.Stat(srcPath); err == nil {
+				cmd := exec.Command("tar", "-xf", srcPath, "-C", a.dst)
+				_ = cmd.Run()
+			}
+		}
+	}
+	return nil
+}
+
+func dirExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
 }
 
 func isImageFile(name string) bool {
