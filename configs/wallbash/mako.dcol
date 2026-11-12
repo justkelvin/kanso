@@ -1,0 +1,29 @@
+$HOME/.config/mako/config|makoctl reload
+font=JetBrainsMono Nerd Font 10
+width=320
+height=120
+margin=14
+padding=12
+border-size=2
+border-radius=8
+
+background-color=#<wallbash_pry1>f5
+text-color=#<wallbash_txt1>
+border-color=#<wallbash_2xa8>
+progress-color=over #<wallbash_2xa8>
+
+default-timeout=5000
+ignore-timeout=0
+group-by=summary
+
+[urgency=low]
+border-color=#<wallbash_1xa4>
+default-timeout=3000
+
+[urgency=normal]
+border-color=#<wallbash_2xa8>
+default-timeout=5000
+
+[urgency=critical]
+border-color=#<wallbash_3xa8>
+default-timeout=0

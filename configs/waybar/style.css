@@ -1,14 +1,5 @@
 @import "theme.css";
 
-/* Fallback default variables if theme.css is not yet present */
-@define-color bar-bg rgba(26, 27, 38, 0.88);
-@define-color main-bg #24283b;
-@define-color main-fg #c0caf5;
-@define-color wb-act-bg #7aa2f7;
-@define-color wb-act-fg #1a1b26;
-@define-color wb-hvr-bg rgba(122, 162, 247, 0.2);
-@define-color wb-hvr-fg #c0caf5;
-
 * {
     font-family: "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
     font-size: 13px;
@@ -20,7 +11,7 @@ window#waybar {
     background-color: @bar-bg;
     border-radius: 8px;
     color: @main-fg;
-    border: 1px solid rgba(122, 162, 247, 0.2);
+    border: none;
 }
 
 /* Modules Left */
@@ -33,7 +24,7 @@ window#waybar {
 
 #workspaces button {
     padding: 0 8px;
-    color: #565f89;
+    color: @main-fg;
     border-radius: 4px;
     border: none;
     transition: all 0.2s ease;
@@ -51,20 +42,22 @@ window#waybar {
 }
 
 #workspaces button.urgent {
-    color: #f7768e;
+    background-color: @wb-act-bg;
+    color: @wb-act-fg;
 }
 
 #window {
     padding: 0 10px;
-    color: #a9b1d6;
+    color: @main-fg;
     font-style: italic;
+    opacity: 0.85;
 }
 
 /* Center */
 #clock {
     padding: 0 12px;
     font-weight: bold;
-    color: #c0caf5;
+    color: @main-fg;
 }
 
 /* Modules Right */
@@ -77,56 +70,58 @@ window#waybar {
     padding: 0 10px;
     margin: 4px 2px;
     border-radius: 6px;
-    background-color: rgba(36, 40, 59, 0.6);
+    background-color: @main-bg;
+    color: @main-fg;
 }
 
 #custom-caffeine {
-    color: #565f89;
     font-size: 14px;
     transition: all 0.2s ease;
 }
 
 #custom-caffeine.active {
-    color: #e0af68;
-    background-color: rgba(224, 175, 104, 0.15);
-    border: 1px solid rgba(224, 175, 104, 0.3);
+    color: @wb-act-fg;
+    background-color: @wb-act-bg;
 }
 
 #custom-caffeine.inactive {
-    color: #565f89;
+    color: @main-fg;
+    opacity: 0.65;
 }
 
 #custom-caffeine:hover {
-    background-color: rgba(122, 162, 247, 0.2);
-    color: #c0caf5;
+    background-color: @wb-hvr-bg;
+    color: @wb-hvr-fg;
 }
 
 #pulseaudio {
-    color: #7aa2f7;
+    color: @main-fg;
 }
 
 #pulseaudio.muted {
-    color: #565f89;
+    color: @main-fg;
+    opacity: 0.5;
 }
 
 #backlight {
-    color: #e0af68;
+    color: @main-fg;
 }
 
 #battery {
-    color: #9ece6a;
+    color: @main-fg;
 }
 
 #battery.charging, #battery.plugged {
-    color: #7dcfff;
+    color: @wb-act-bg;
 }
 
 #battery.warning:not(.charging) {
-    color: #e0af68;
+    color: @wb-hvr-bg;
 }
 
 #battery.critical:not(.charging) {
-    color: #f7768e;
+    color: @wb-act-fg;
+    background-color: @wb-act-bg;
     animation-name: blink;
     animation-duration: 1s;
     animation-timing-function: linear;
@@ -136,19 +131,21 @@ window#waybar {
 
 @keyframes blink {
     to {
-        background-color: #f7768e;
-        color: #1a1b26;
+        background-color: @wb-hvr-bg;
+        color: @wb-hvr-fg;
     }
 }
 
 #network {
-    color: #bb9af7;
+    color: @main-fg;
 }
 
 #network.disconnected {
-    color: #f7768e;
+    color: @main-fg;
+    opacity: 0.5;
 }
 
 #tray {
     padding: 0 8px;
+    color: @main-fg;
 }

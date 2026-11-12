@@ -16,9 +16,9 @@ configuration {
     bg: @main-bg;
     bg-alt: @main-bg;
     fg: @main-fg;
-    fg-alt: #565f89;
+    fg-alt: @main-ex;
     accent: @select-bg;
-    urgent: #f7768e;
+    urgent: @main-br;
 
     background-color: transparent;
     text-color: @fg;
@@ -90,7 +90,7 @@ element normal.normal {
 
 element selected.normal {
     background-color: @accent;
-    text-color: #1a1b26;
+    text-color: @select-fg;
 }
 
 element-icon {

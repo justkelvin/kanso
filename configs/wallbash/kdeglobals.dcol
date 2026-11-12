@@ -1,4 +1,16 @@
 $HOME/.config/kdeglobals
+[General]
+TerminalApplication=kitty
+TerminalService=kitty.desktop
+widgetStyle=kvantum
+
+[KDE]
+ShowDeleteCommand=true
+SingleClick=false
+
+[Icons]
+Theme=Adwaita
+
 [Colors:Window]
 BackgroundNormal=<wallbash_pry1_rgb>
 ForegroundNormal=<wallbash_txt1_rgb>

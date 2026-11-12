@@ -1,4 +1,4 @@
-$HOME/.config/waybar/theme.css|pkill -SIGUSR2 waybar
+$HOME/.config/waybar/theme.css|pkill -SIGUSR2 waybar || waybar &
 /* To enable blur please make sure alpha is greater than 0 */
 @define-color bar-bg rgba(0, 0, 0, 0.1); 
 
