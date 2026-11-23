@@ -1,0 +1,37 @@
+/* Dynamic corner radius following the active desktop theme */
+window#waybar {
+    border-radius: 10px;
+}
+
+#workspaces {
+    border-radius: 8px;
+}
+
+#workspaces button {
+    border-radius: 6px;
+}
+
+#custom-caffeine,
+#pulseaudio,
+#backlight,
+#battery,
+#network,
+#tray {
+    border-radius: 8px;
+}
+
+tooltip {
+    border-radius: 10px;
+}
+
+menu {
+    border-radius: 10px;
+}
+
+menu menuitem {
+    border-radius: 6px;
+}
+
+window.popup decoration {
+    border-radius: 10px;
+}

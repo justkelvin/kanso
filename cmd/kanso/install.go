@@ -297,6 +297,7 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		{filepath.Join(repoRoot, "configs", "mako"), filepath.Join(configDir, "mako")},
 		{filepath.Join(repoRoot, "configs", "satty"), filepath.Join(configDir, "satty")},
 		{filepath.Join(repoRoot, "configs", "xdg-desktop-portal"), filepath.Join(configDir, "xdg-desktop-portal")},
+		{filepath.Join(repoRoot, "configs", "qt6ct"), filepath.Join(configDir, "qt6ct")},
 		{filepath.Join(repoRoot, "configs", "wallbash"), filepath.Join(home, ".config", "kanso", "wallbash")},
 		{filepath.Join(repoRoot, "themes"), filepath.Join(home, ".config", "kanso", "themes")},
 		{filepath.Join(repoRoot, "assets", "arcs"), filepath.Join(home, ".config", "kanso", "arcs")},
@@ -314,7 +315,8 @@ func deployAllConfigs(repoRoot, backupDir string, backedUpCount *int, dryRun boo
 		dst string
 	}{
 		{filepath.Join(repoRoot, "configs", "dolphin", "dolphinrc"), filepath.Join(configDir, "dolphinrc")},
-		{filepath.Join(repoRoot, "configs", "dolphin", "dolphinui.rc"), filepath.Join(home, ".local", "share", "kxmlgui5", "dolphin", "dolphinui.rc")},
+		{filepath.Join(repoRoot, "configs", "dolphin", "dolphinstaterc"), filepath.Join(home, ".local", "state", "dolphinstaterc")},
+		{filepath.Join(repoRoot, "configs", "dolphin", "dolphinui.rc"), filepath.Join(home, ".local", "share", "kxmlgui6", "dolphin", "dolphinui.rc")},
 		{filepath.Join(repoRoot, "configs", "kde", "kdeglobals"), filepath.Join(configDir, "kdeglobals")},
 		{filepath.Join(repoRoot, "configs", "electron", "electron-flags.conf"), filepath.Join(configDir, "electron-flags.conf")},
 		{filepath.Join(repoRoot, "configs", "electron", "code-flags.conf"), filepath.Join(configDir, "code-flags.conf")},

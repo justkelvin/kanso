@@ -350,7 +350,7 @@ func applyWallpaper(item WallpaperItem) error {
 
 	if !ipcSuccess {
 		// Try via hyprctl hyprpaper command
-		if exec.Command("hyprctl", "hyprpaper", "wallpaper", fmt.Sprintf(",%s", item.FullPath)).Run() == nil {
+		if runHyprctl("hyprpaper", "wallpaper", fmt.Sprintf(",%s", item.FullPath)) == nil {
 			ipcSuccess = true
 		}
 	}

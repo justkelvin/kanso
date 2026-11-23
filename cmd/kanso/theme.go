@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -308,13 +309,42 @@ func applyTheme(themeName string) error {
 		_ = os.WriteFile(kvMain, []byte("[General]\ntheme=wallbash\n"), 0644)
 	}
 
+	// 3. Ensure Dolphin layout and Qt styling files exist
+	if repoRoot != "" {
+		dolphinrcSrc := filepath.Join(repoRoot, "configs", "dolphin", "dolphinrc")
+		dolphinStateSrc := filepath.Join(repoRoot, "configs", "dolphin", "dolphinstaterc")
+		dolphinUiSrc := filepath.Join(repoRoot, "configs", "dolphin", "dolphinui.rc")
+
+		stateDst := filepath.Join(home, ".local", "state", "dolphinstaterc")
+		if _, err := os.Stat(stateDst); os.IsNotExist(err) {
+			if _, err := os.Stat(dolphinStateSrc); err == nil {
+				_ = copyFile(dolphinStateSrc, stateDst)
+			}
+		}
+		dolphinrcDst := filepath.Join(home, ".config", "dolphinrc")
+		if _, err := os.Stat(dolphinrcDst); os.IsNotExist(err) {
+			if _, err := os.Stat(dolphinrcSrc); err == nil {
+				_ = copyFile(dolphinrcSrc, dolphinrcDst)
+			}
+		}
+		uiDst6 := filepath.Join(home, ".local", "share", "kxmlgui6", "dolphin", "dolphinui.rc")
+		if _, err := os.Stat(uiDst6); os.IsNotExist(err) {
+			if _, err := os.Stat(dolphinUiSrc); err == nil {
+				_ = copyFile(dolphinUiSrc, uiDst6)
+			}
+		}
+	}
+
 	// Deploy native Lua Hyprland theme if present
 	themeLuaSrc := filepath.Join(themeDir, "theme.lua")
 	if _, err := os.Stat(themeLuaSrc); err == nil {
 		hyprDst := filepath.Join(home, ".config", "hypr", "theme.lua")
 		_ = copyFile(themeLuaSrc, hyprDst)
-		_ = exec.Command("hyprctl", "reload").Run()
+		_ = runHyprctl("reload")
 	}
+
+	// Update dynamic Waybar border radius according to active theme
+	updateWaybarBorderRadius(themeDir)
 
 	// 4. Resolve and set default theme wallpaper
 	themeWallpaper := resolveThemeWallpaper(themeDir)
@@ -491,14 +521,19 @@ func applyInterfaceMetadata(hyprThemeContent string) {
 		_ = os.MkdirAll(localIconsDefault, 0755)
 		_ = os.WriteFile(filepath.Join(localIconsDefault, "index.theme"), []byte(cursorDefault), 0644)
 
-		_ = exec.Command("hyprctl", "setcursor", cursorTheme, cursorSize).Run()
+		_ = runHyprctl("setcursor", cursorTheme, cursorSize)
 	}
 
 	// 7. KDE Globals (~/.config/kdeglobals)
 	kdeGlobalsPath := filepath.Join(configDir, "kdeglobals")
 	updateKdeGlobals(kdeGlobalsPath, iconTheme, colorScheme)
 
-	// 8. Update Rofi Theme with active Icon Theme
+	// 8. Update Qt6ct configuration
+	if iconTheme != "" {
+		updateQtCtConfig(filepath.Join(configDir, "qt6ct", "qt6ct.conf"), iconTheme)
+	}
+
+	// 9. Update Rofi Theme with active Icon Theme
 	if iconTheme != "" {
 		rofiThemePath := filepath.Join(configDir, "rofi", "theme.rasi")
 		if data, err := os.ReadFile(rofiThemePath); err == nil {
@@ -514,8 +549,104 @@ func applyInterfaceMetadata(hyprThemeContent string) {
 		}
 	}
 
-	// 9. Reload Waybar to pick up new GTK icon and theme settings
+	// 10. Reload Waybar to pick up new GTK icon and theme settings
 	_ = exec.Command("pkill", "-SIGUSR2", "waybar").Run()
+}
+
+func updateQtCtConfig(configPath, iconTheme string) {
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return
+	}
+	content := string(data)
+	reIcon := regexp.MustCompile(`(?m)^icon_theme=.*$`)
+	if reIcon.MatchString(content) {
+		content = reIcon.ReplaceAllString(content, "icon_theme="+iconTheme)
+	} else if strings.Contains(content, "[Appearance]") {
+		content = strings.Replace(content, "[Appearance]", "[Appearance]\nicon_theme="+iconTheme, 1)
+	} else {
+		content += fmt.Sprintf("\n[Appearance]\nicon_theme=%s\n", iconTheme)
+	}
+	_ = os.WriteFile(configPath, []byte(content), 0644)
+}
+
+func updateWaybarBorderRadius(themeDir string) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return
+	}
+	rounding := 10 // default
+	// 1. Try theme.lua
+	if data, err := os.ReadFile(filepath.Join(themeDir, "theme.lua")); err == nil {
+		re := regexp.MustCompile(`rounding\s*=\s*(\d+)`)
+		if m := re.FindStringSubmatch(string(data)); len(m) > 1 {
+			if v, err := strconv.Atoi(m[1]); err == nil {
+				rounding = v
+			}
+		}
+	} else if data, err := os.ReadFile(filepath.Join(themeDir, "hypr.theme")); err == nil {
+		re := regexp.MustCompile(`(?m)^\s*rounding\s*=\s*(\d+)`)
+		if m := re.FindStringSubmatch(string(data)); len(m) > 1 {
+			if v, err := strconv.Atoi(m[1]); err == nil {
+				rounding = v
+			}
+		}
+	}
+
+	barR := rounding
+	modR := rounding
+	btnR := rounding
+	if rounding > 0 {
+		if modR > 2 {
+			modR -= 2
+		}
+		if btnR > 4 {
+			btnR -= 4
+		}
+	}
+
+	content := fmt.Sprintf(`/* Dynamic corner radius following the active desktop theme */
+window#waybar {
+    border-radius: %dpx;
+}
+
+#workspaces {
+    border-radius: %dpx;
+}
+
+#workspaces button {
+    border-radius: %dpx;
+}
+
+#custom-caffeine,
+#pulseaudio,
+#backlight,
+#battery,
+#network,
+#tray {
+    border-radius: %dpx;
+}
+
+tooltip {
+    border-radius: %dpx;
+}
+
+menu {
+    border-radius: %dpx;
+}
+
+menu menuitem {
+    border-radius: %dpx;
+}
+
+window.popup decoration {
+    border-radius: %dpx;
+}
+`, barR, modR, btnR, modR, rounding, rounding, btnR, rounding)
+
+	waybarDir := filepath.Join(home, ".config", "waybar")
+	_ = os.MkdirAll(waybarDir, 0755)
+	_ = os.WriteFile(filepath.Join(waybarDir, "border-radius.css"), []byte(content), 0644)
 }
 
 func copyFile(src, dst string) error {
